@@ -1,0 +1,23 @@
+
+
+const char *entry_error_messages[] = {
+    "SYNC_INVALID_EL1t",
+    "IRQ_INVALID_EL1t",
+    "FIQ_INVALID_EL1t",
+    "ERROR_INVALID_EL1t"
+
+    "SYNC_INVALID_EL1h",
+    "IRQ_INVALID_EL1h",
+    "FIQ_INVALID_EL1h",
+    "ERROR_INVALID_EL1h"
+
+    "SYNC_INVALID_EL0_64",
+    "IRQ_INVALID_EL0_65",
+    "FIQ_INVALID_EL0_65",
+    "ERROR_INVALID_EL0_65"
+
+    "SYNC_INVALID_EL0_32",
+    "IRQ_INVALID_EL0_32",
+    "FIQ_INVALID_EL0_32",
+    "ERROR_INVALID_EL0_32"
+};

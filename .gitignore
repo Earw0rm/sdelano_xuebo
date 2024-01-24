@@ -1,0 +1,6 @@
+.vscode
+*.o
+dbug.txt
+build
+kernel*
+config.backup.txt
