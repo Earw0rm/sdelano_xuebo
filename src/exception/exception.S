@@ -1,5 +1,5 @@
 
-#include "exception_entry.h"
+#include "exception.h"
 
 // ***************************************
 // Exceptiom vector table, Page 5357 of AArch64-Reference-Manual (A-profile architecture reference manual).    
@@ -134,6 +134,7 @@ fiq_invalid_el0_32:
 error_invalid_el0_32:
 	handle_invalid_entry  ERROR_INVALID_EL0_32
 
+// boolsheet, peredelat'
 el1_irq:
 	kernel_entry 
 	bl	handle_irq
@@ -143,11 +144,29 @@ el1_irq:
 err_hang: b err_hang
 
 
-//MOCK
-.globl show_invalid_entry_message
-show_invalid_entry_message:
+//vbar_el1 => vector base address register 
+//daif => part of the pstate
+.globl irq_vector_init
+irq_vector_init:
+    adr x0, vectors
+    msr vbar_el1, x0 
+    ret 
+
+.globl enable_irq
+enable_irq:
+	msr daifclr, #2 
 	ret
 
-.globl handle_irq
-handle_irq:
+.globl disable_irq
+disable_irq:
+	msr	daifset, #2
 	ret
+
+//MOCK
+//.globl show_invalid_entry_message
+//show_invalid_entry_message:
+//	ret
+
+//.globl handle_irq
+//handle_irq:
+//	ret

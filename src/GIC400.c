@@ -23,6 +23,9 @@ int gic400_init(void){
         GIC400_DISTRIBUTOR->icpend[i]   = 0xffffffff;
         GIC400_DISTRIBUTOR->icactive[i] = 0xffffffff;
 
+        if(i == 3){
+            GIC400_DISTRIBUTOR->isenable[i] = 1; // interrupt id 96 = sys_timer_0;    
+        }
     }
 
     for(uint32_t i = 0; i < (it_lines_support + 1)  * 2; ++i){
@@ -39,10 +42,11 @@ int gic400_init(void){
         GIC400_DISTRIBUTOR->ipriority[i] = 0b10100000U;
         GIC400_DISTRIBUTOR->istargets[i] = 0b00000001U;
     }
+    GIC400_INTERFACES->pm = 0xf0;
 
-    
-    GIC400_INTERFACES->PM = 0xf0;
+
+
     GIC400_DISTRIBUTOR->ctl = CTL_ENABLE;
-    GIC400_INTERFACES->PM = CTL_ENABLE;
+    GIC400_INTERFACES->ctl = CTL_ENABLE;
     return 0;
 }

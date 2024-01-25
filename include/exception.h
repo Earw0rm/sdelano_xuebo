@@ -1,6 +1,8 @@
 #ifndef _EXCEPTION_ENTRY_H
 #define _EXCEPTION_ENTRY_H
 
+
+
 // ***************************************
 // Exceptiom vector table, Page 5357 of AArch64-Reference-Manual (A-profile architecture reference manual).    
 // ***************************************
@@ -26,5 +28,12 @@
 #define IRQ_INVALID_EL0_32   13 
 #define FIQ_INVALID_EL0_32   14 
 #define ERROR_INVALID_EL0_32 15 
+
+#ifndef __ASSEMBLER__
+#include "common.h"
+void show_invalid_entry_message(uint32_t, uint32_t, uint32_t);
+void handle_irq(void);
+#endif
+
 
 #endif 
