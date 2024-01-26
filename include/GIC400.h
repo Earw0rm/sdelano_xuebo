@@ -41,6 +41,8 @@
 #define TYPE_ITLINESNUMBER_GET(x) ( x & 0xF ) 
 #define TYPE_IS_SECURE_EXTN_GET(x) (x & (1 << 10))
 
+
+
 struct GIC400_distributor{
     reg32 ctl;
     reg32 type;
@@ -130,5 +132,7 @@ struct GIC400_CPU_interfaces{
 void gic400_turn_off_distributor(void);
 
 int gic400_init(void);
+
+void gic400_enable_sys_timer(uint32_t timer_num);
 
 #endif

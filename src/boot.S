@@ -11,6 +11,7 @@ _start:
     b proc_hang
 
 proc_hang:
+    wfi
     b proc_hang
 
 
@@ -30,8 +31,12 @@ master:
     adr x0, el1_entry
     msr elr_el3, x0
     
-    mov sp, #EL3_MASTER_STACK
-    bl configure_el3
+    mov sp, #_MASTER_STACK // sp_el0
+    mov x1, #EL1_MASTER_STACK
+    msr sp_el1, x1
+
+
+
     eret
     
 el1_entry:
@@ -40,6 +45,8 @@ el1_entry:
     sub x1, x1, x0
     bl memzero 
 
-    mov sp, #EL1_MASTER_STACK
+    ldr x2, =vectors
+    msr vbar_el1, x2
+
     bl kernel_main
     b proc_hang

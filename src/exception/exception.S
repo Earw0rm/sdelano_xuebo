@@ -152,21 +152,3 @@ irq_vector_init:
     msr vbar_el1, x0 
     ret 
 
-.globl enable_irq
-enable_irq:
-	msr daifclr, #2 
-	ret
-
-.globl disable_irq
-disable_irq:
-	msr	daifset, #2
-	ret
-
-//MOCK
-//.globl show_invalid_entry_message
-//show_invalid_entry_message:
-//	ret
-
-//.globl handle_irq
-//handle_irq:
-//	ret
