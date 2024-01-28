@@ -32,7 +32,10 @@
 
 #define SCR_RESERVED (3 << 4)
 #define SCR_RW		 (1 << 10)
-#define SCR_NS		 (1 << 0)
+// broadcom 2711 does not imlement FEAT_RME
+// level el0 and el1 are non secure. So, they cannot configure 
+// gic400 or another stuff. 
+#define SCR_NS		 (1 << 0) 
 #define SCR_VALUE	 ( SCR_RESERVED | SCR_RW | SCR_NS)
 
 // ***************************************

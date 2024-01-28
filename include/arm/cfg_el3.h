@@ -4,7 +4,7 @@
 #ifndef __ASSEMBLER__
 
 void configure_el3(void);
-
+void check(void);
 #endif 
 
 #endif

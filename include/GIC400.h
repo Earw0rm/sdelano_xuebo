@@ -134,5 +134,5 @@ void gic400_turn_off_distributor(void);
 int gic400_init(void);
 
 void gic400_enable_sys_timer(uint32_t timer_num);
-
+uint32_t get_num_of_it_lines_support(void);
 #endif

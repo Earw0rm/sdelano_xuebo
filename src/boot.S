@@ -16,6 +16,17 @@ proc_hang:
 
 
 master:
+    mov x1, #SP_EL1_MASTER_STACK 
+    msr sp_el1, x1
+
+    mov sp, #SP_EL3_MASTER_STACK  // sp_el3
+
+    mov x1, #SP_EL0_MASTER_STACK // sp_el0
+    msr sp_el0, x1
+
+    bl configure_el3
+
+
     ldr x0, =SCTLR_VALUE_MMU_DISABLED
     msr sctlr_el1, x0
 
@@ -30,11 +41,6 @@ master:
 
     adr x0, el1_entry
     msr elr_el3, x0
-    
-    mov sp, #_MASTER_STACK // sp_el0
-    mov x1, #EL1_MASTER_STACK
-    msr sp_el1, x1
-
 
 
     eret
@@ -47,6 +53,6 @@ el1_entry:
 
     ldr x2, =vectors
     msr vbar_el1, x2
-
+    
     bl kernel_main
     b proc_hang
