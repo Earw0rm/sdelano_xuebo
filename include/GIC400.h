@@ -31,7 +31,7 @@
 //GICD_CTRLR
 #define CTL_ENABLE_GRP_0  (1 << 0)
 #define CTL_ENABLE_GRP_1  (2 << 0)
-#define CTL_ENABLE        (1 << 0) // ( 3 << 0 )
+#define CTL_ENABLE        (3 << 0) // ( 3 << 0 )
 #define CTL_DISABLE       (0 << 0)
 #define GIC_SPURIOUS_INTR 1023
 // Indicates the maximum number of interrupts that the GIC supports. If ITLinesNumber=N, the

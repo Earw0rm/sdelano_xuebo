@@ -14,11 +14,13 @@ struct system_timer_reg{
 };
 
 #define SYSTEM_TIMER ((struct system_timer_reg *) (SYS_TIMER_BASE))
-
+#define SCHEDULER_TIME 12000000
 
 uint32_t sys_timer_init(void);
 uint32_t get_sys_timer_0(void);
 uint32_t get_sys_timer_0_status(void);
 uint32_t get_sys_timer_compare_0(void);
 void sys_timer_recharge(uint32_t timer_num, uint32_t recharge_time);
+
+
 #endif 
