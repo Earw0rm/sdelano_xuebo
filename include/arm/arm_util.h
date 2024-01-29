@@ -16,7 +16,11 @@ static inline void enable_irq(){
     asm volatile("msr daifclr, #2" ); 
 }
 
-
+static inline uint32_t get_current_el(){
+    uint32_t x;
+    asm volatile("mrs %0, CurrentEL" : "=r" (x));
+    return (x >> 2);
+}
 
 
 #endif 

@@ -1,7 +1,8 @@
 #include "exception.h"
 #include "printf.h"
 #include "GIC400.h"
-
+#include "arm/arm_util.h"
+#include "sys_timer.h"
 const char *entry_error_messages[] = {
     "SYNC_INVALID_EL1t",
     "IRQ_INVALID_EL1t",
@@ -37,11 +38,26 @@ void show_invalid_entry_message(uint32_t ex_type, uint32_t esr_el1, uint32_t elr
 void handle_irq(void){
     // reg32 aia; ask
     // reg32 aeoi; 
-    uint32_t ia = GIC400_INTERFACES->ia;
-    uint32_t interrupt_id = ia & (0b111111111);
-    printf("Handle_irq. Interrupt id is: %u \r\n", interrupt_id);
+    uint32_t interrupt_id = GIC400_INTERFACES->ia & 0x3FFU;
+    uint32_t current_el = get_current_el();
+    printf("Handle_irq. Interrupt id is: %d \r\n", interrupt_id);
+    printf("Exception level : EL%d \r\n ", current_el);
 
-    uint32_t eoi = GIC400_INTERFACES->eoi;
-    eoi |= interrupt_id;
-    GIC400_INTERFACES->eoi = eoi;
+    if(interrupt_id != GIC_SPURIOUS_INTR){
+        switch (interrupt_id)
+        {
+            case SYS_TIMER_0:
+                /* code */
+                break;
+            case SYS_TIMER_3:
+                sys_timer_recharge(3, 12000000);
+                break;
+            default:
+                break;
+        }
+        uint32_t eoi = GIC400_INTERFACES->eoi;
+        eoi |= interrupt_id;
+        GIC400_INTERFACES->eoi = eoi;
+    }
+
 }

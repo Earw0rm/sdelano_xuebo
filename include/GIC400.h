@@ -31,9 +31,9 @@
 //GICD_CTRLR
 #define CTL_ENABLE_GRP_0  (1 << 0)
 #define CTL_ENABLE_GRP_1  (2 << 0)
-#define CTL_ENABLE        (3 << 0)
+#define CTL_ENABLE        (1 << 0) // ( 3 << 0 )
 #define CTL_DISABLE       (0 << 0)
-
+#define GIC_SPURIOUS_INTR 1023
 // Indicates the maximum number of interrupts that the GIC supports. If ITLinesNumber=N, the
 // maximum number of interrupts is 32(N+1). The interrupt ID range is from 0 to (number of IDs – 1). For
 // example:
@@ -124,6 +124,12 @@ struct GIC400_CPU_interfaces{
     reg32 dir;
 };
 
+typedef enum{
+    SYS_TIMER_0 = 96,
+    SYS_TIMER_1 = 97,
+    SYS_TIMER_2 = 98,
+    SYS_TIMER_3 = 99,
+} INTR_ID;
 
 #define GIC400_DISTRIBUTOR ((struct GIC400_distributor *) (GIC400_BASE + 0x1000))
 #define GIC400_INTERFACES ((struct GIC400_CPU_interfaces *) (GIC400_BASE + 0x2000))
