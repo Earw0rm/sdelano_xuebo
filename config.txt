@@ -3,3 +3,4 @@ kernel_old=1
 disable_commandline_tags=1
 core_freq_min=250
 enable_gic=1
+gpu_mem=256

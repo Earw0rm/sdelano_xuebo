@@ -1,6 +1,7 @@
-#include "mm.h"
+//#include "mm.h"
 #include "arm/sysregs.h"
 #include "arm/cfg_el3.h"
+#include "pa_alloc.h"
 .section ".text.boot"
 
 .globl _start
@@ -16,12 +17,13 @@ proc_hang:
 
 
 master:
-    mov x1, #SP_EL1_MASTER_STACK 
+    ldr x1, =SP_EL1_MASTER_STACK 
     msr sp_el1, x1
 
-    mov sp, #SP_EL3_MASTER_STACK  // sp_el3
+    ldr x1, =SP_EL3_MASTER_STACK
+    mov sp, x1  // sp_el3
 
-    mov x1, #SP_EL0_MASTER_STACK // sp_el0
+    ldr x1, =SP_EL0_MASTER_STACK // sp_el0
     msr sp_el0, x1
 
     bl configure_el3
@@ -48,8 +50,9 @@ master:
 el1_entry:
     adr x0, bss_begin
     adr x1, bss_end
-    sub x1, x1, x0
-    bl memzero 
+    bl zero_range
+//    sub x1, x1, x0
+//    bl memzero 
 
     ldr x2, =vectors
     msr vbar_el1, x2

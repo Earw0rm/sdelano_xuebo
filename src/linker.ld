@@ -5,6 +5,7 @@
 
 SECTIONS
 {
+    _boot_start_addr = .;
     .text.boot : { *(.text.boot) }
     .text :  { *(.text) }
     .rodata : { *(.rodata) }
@@ -13,7 +14,6 @@ SECTIONS
     bss_begin = .;
     .bss : { *(.bss*) } 
     bss_end = .;
-
-
-
+    . = ALIGN(4096);
+    _end_of_kernel_addr = .;
 }
