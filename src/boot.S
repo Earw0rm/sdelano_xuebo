@@ -17,13 +17,13 @@ proc_hang:
 
 
 master:
-    ldr x1, =SP_EL1_MASTER_STACK 
+    ldr x1, =SP_EL1_MASTER 
     msr sp_el1, x1
 
-    ldr x1, =SP_EL3_MASTER_STACK
+    ldr x1, =SP_EL3_MASTER
     mov sp, x1  // sp_el3
 
-    ldr x1, =SP_EL0_MASTER_STACK // sp_el0
+    ldr x1, =SP_EL0_MASTER // sp_el0
     msr sp_el0, x1
 
     bl configure_el3
@@ -51,8 +51,6 @@ el1_entry:
     adr x0, bss_begin
     adr x1, bss_end
     bl zero_range
-//    sub x1, x1, x0
-//    bl memzero 
 
     ldr x2, =vectors
     msr vbar_el1, x2
