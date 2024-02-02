@@ -53,3 +53,22 @@ uint64_t get_num_of_free_pages(void){
         }
     return counter;
 }
+
+uint64_t get_page(void){
+    struct run * page = freepages;
+    if(page == ((struct run*) TERMINAL_PAGE)){
+        return 0;
+    }
+    freepages = page->next;
+    return ((uint64_t) page);
+}
+
+bool free_page(uint64_t paddr){
+    if(paddr == 0){
+        return false;
+    }        
+    struct run * page = ((struct run *) paddr);
+    page->next = freepages;
+    freepages = page;
+    return true;
+}

@@ -3,6 +3,8 @@
 
 #include "common.h"
 
-int32_t copy_process(uint32_t fn_addr, uint32_t arg);
+int64_t copy_process(uint64_t fn_addr, uint64_t arg);
+
+extern uint64_t fork_ret[]; // this is function defined in fork.S
 
 #endif 

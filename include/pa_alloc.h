@@ -7,7 +7,9 @@
 
 #define PAGE_SIZE 4096 // bytes
 
-#define ADDR_ROUND_DOWN(x) (x & (~0xfff))
+#define ADDR_ROUND_DOWN(x) (((uint64_t)(x)) & (~0xfff))
+#define PAGE_UP(x) ((((uint64_t)(x)) & (~0xfff)) + (0x1000))
+#define TOP_OF_THE_PAGE(x) ((((uint64_t)x) & (~0xfff)) + (0x1000 - 0x0004))
 
 // legacy master view of physical memory
 #define PASTOP (0x400000000)
@@ -60,6 +62,9 @@ bool zero_range(uint64_t * astart, uint64_t * astop);
 uint64_t init_pa_alloc(void);
 uint64_t get_num_of_free_pages(void);
 
+uint64_t get_page(void);
+
+bool free_page(uint64_t paddr);
 // void free_page(uint64_t p);
 // uint64_t get_free_page(void);
 

@@ -10,12 +10,17 @@
 #define NR_TASKS    64
 #define FST_TASK    task[0]
 #define LST_TASK    task[NR_TASKS-1]
-#define TASK_RUNNING 0
+
 
 extern struct task_struct *current;
 // array for simplisity. Later change to freelist (or hashtable)
 extern struct task_struct *task[NR_TASKS];
-extern int nr_tasks;
+extern int number_of_runnning_tasks;
+
+
+typedef enum {
+    TASK_RUNNING
+} task_state;
 
 struct cpu_context {
     uint64_t x19;
@@ -34,7 +39,8 @@ struct cpu_context {
 };
 struct task_struct{
     struct cpu_context cpu_context;
-    int64_t state;
+
+    task_state state;
     // This field is used to determine how long the current task has been running.
     // counter decreases by 1 each timer tick and when it reaches 0 another task is scheduled.
     int64_t counter;
@@ -57,6 +63,7 @@ struct task_struct{
 /*cpu_context*/	{ {0,0,0,0,0,0,0,0,0,0,0,0,0}, \
 /*state etc*/	   0, 0, 1, 0 \
 }
+
 
 
 void preempt_disable(void);
