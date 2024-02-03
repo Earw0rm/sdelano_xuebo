@@ -3,6 +3,8 @@
 #include "GIC400.h"
 #include "arm/arm_util.h"
 #include "sys_timer.h"
+#include "sched.h"
+
 const char *entry_error_messages[] = {
     "SYNC_INVALID_EL1t",
     "IRQ_INVALID_EL1t",
@@ -25,6 +27,11 @@ const char *entry_error_messages[] = {
     "ERROR_INVALID_EL0_32"
 };
 
+inline static void _sys_timer_handler(void){
+    sys_timer_recharge(3, 12000000);
+    timer_tick();
+}
+
 // this functiion can be call only after init_printf();
 void show_invalid_entry_message(uint32_t ex_type, uint32_t esr_el1, uint32_t elr_el1){
     char err_msg =  *(entry_error_messages[ex_type]);
@@ -39,25 +46,26 @@ void handle_irq(void){
     // reg32 aia; ask
     // reg32 aeoi; 
     uint32_t interrupt_id = GIC400_INTERFACES->ia & 0x3FFU;
+    if(interrupt_id == GIC_SPURIOUS_INTR) return;
+
+
     uint32_t current_el = get_current_el();
+    //TODO define constant that can enable or disable debug msgs.
     printf("Handle_irq. Interrupt id is: %d \r\n", interrupt_id);
     printf("Exception level : EL%d \r\n ", current_el);
 
-    if(interrupt_id != GIC_SPURIOUS_INTR){
-        switch (interrupt_id)
-        {
-            case SYS_TIMER_0:
+    switch (interrupt_id){
+        case SYS_TIMER_0:
                 /* code */
-                break;
-            case SYS_TIMER_3:
-                sys_timer_recharge(3, 12000000);
-                break;
-            default:
-                break;
-        }
-        uint32_t eoi = GIC400_INTERFACES->eoi;
-        eoi |= interrupt_id;
-        GIC400_INTERFACES->eoi = eoi;
+            break;
+        case SYS_TIMER_3:
+            _sys_timer_handler();
+            break;
+        default:
+            break;
     }
+    uint32_t eoi = GIC400_INTERFACES->eoi;
+    eoi |= interrupt_id;
+    GIC400_INTERFACES->eoi = eoi;
 
 }

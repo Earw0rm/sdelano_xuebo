@@ -23,7 +23,7 @@
 .endm
 
 .macro kernel_entry
-	sub	sp, sp, #S_FRAME_SIZE
+	sub	sp, sp,   #S_FRAME_SIZE
 	stp	x0, x1,   [sp, #16 * 0]
 	stp	x2, x3,   [sp, #16 * 1]
 	stp	x4, x5,   [sp, #16 * 2]

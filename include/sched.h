@@ -1,11 +1,14 @@
 #ifndef _SCHED_H
 #define _SCHED_H
 
-#include "common.h"
+
+
+#define CPU_CONTEXT_OFFSET 0
 
 
 #ifndef __ASSEMBLER__
 
+#include "common.h"
 #define THREAD_SIZE 4096
 #define NR_TASKS    64
 #define FST_TASK    task[0]
@@ -15,7 +18,7 @@
 extern struct task_struct *current;
 // array for simplisity. Later change to freelist (or hashtable)
 extern struct task_struct *task[NR_TASKS];
-extern int number_of_runnning_tasks;
+extern uint64_t number_of_runnning_tasks;
 
 
 typedef enum {
@@ -69,6 +72,8 @@ struct task_struct{
 void preempt_disable(void);
 void preempt_enable(void);
 void schedule(void);
-
+void timer_tick(void);
+void switch_to(struct task_struct * next);
+extern void cpu_switch_to(struct task_struct * prev, struct task_struct * next);
 #endif
 #endif 
