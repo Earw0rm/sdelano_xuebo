@@ -4,7 +4,7 @@
 #include "arm/arm_util.h"
 #include "sys_timer.h"
 #include "sched.h"
-
+#include "sys_timer.h"
 const char *entry_error_messages[] = {
     "SYNC_INVALID_EL1t",
     "IRQ_INVALID_EL1t",
@@ -28,7 +28,7 @@ const char *entry_error_messages[] = {
 };
 
 inline static void _sys_timer_handler(void){
-    sys_timer_recharge(3, 12000000);
+    sys_timer_recharge(3, SCHEDULER_RECHARGE_TIME);
     timer_tick();
 }
 
@@ -49,10 +49,10 @@ void handle_irq(void){
     if(interrupt_id == GIC_SPURIOUS_INTR) return;
 
 
-    uint32_t current_el = get_current_el();
+    // uint32_t current_el = get_current_el();
     //TODO define constant that can enable or disable debug msgs.
-    printf("Handle_irq. Interrupt id is: %d \r\n", interrupt_id);
-    printf("Exception level : EL%d \r\n ", current_el);
+    // printf("Handle_irq. Interrupt id is: %d \r\n", interrupt_id);
+    // printf("Exception level : EL%d \r\n ", current_el);
 
     switch (interrupt_id){
         case SYS_TIMER_0:

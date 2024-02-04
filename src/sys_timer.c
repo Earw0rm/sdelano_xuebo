@@ -4,9 +4,9 @@
 
 uint32_t sys_timer_init(void){
     uint32_t cl = SYSTEM_TIMER->counter_lower;
-    SYSTEM_TIMER->compare[3] = cl + SCHEDULER_TIME;
+    SYSTEM_TIMER->compare[3] = cl + SCHEDULER_RECHARGE_TIME;
     SYSTEM_TIMER->control_status = 0b1000U;
-    return cl + SCHEDULER_TIME;
+    return cl + SCHEDULER_RECHARGE_TIME;
 }
 
 void sys_timer_recharge(uint32_t timer_num, uint32_t recharge_time){

@@ -36,9 +36,9 @@ struct cpu_context {
     uint64_t x26;
     uint64_t x27;
     uint64_t x28;
-    uint64_t fp;
-    uint64_t sp;
-    uint64_t pc;    
+    uint64_t x29_fp; // frame pointer
+    uint64_t x30_lr; // link register
+    uint64_t x31_sp; // stack pointer for current thread    
 };
 struct task_struct{
     struct cpu_context cpu_context;
@@ -75,5 +75,8 @@ void schedule(void);
 void timer_tick(void);
 void switch_to(struct task_struct * next);
 extern void cpu_switch_to(struct task_struct * prev, struct task_struct * next);
+
+void debug_addr(uint64_t addr, uint64_t addr2);
+
 #endif
 #endif 

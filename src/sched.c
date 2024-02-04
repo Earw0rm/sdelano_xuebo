@@ -1,6 +1,11 @@
 #include "sched.h"
 #include "arm/arm_util.h"
 
+
+#include "mini_uart.h"
+#include "printf.h"
+
+
 static struct task_struct init_task = INIT_TASK;
 struct task_struct * current = &(init_task);
 struct task_struct * task[NR_TASKS] = {&(init_task), };
@@ -8,17 +13,21 @@ uint64_t number_of_runnning_tasks = 1;
 
 
 void preempt_disable(void){
-    current->preempt_count--;
+    current->preempt_count++;
 }
 
 void preempt_enable(void){
-    current->preempt_count++;
+    if(current->preempt_count > 0){
+        current->preempt_count -= 1; //overflow safe
+    }
 }
 
 void switch_to(struct task_struct * next){
     if(current == next) return;
     struct task_struct * prev = current;
     current = next; // TODO amoswap?
+    printf("switch to %x %x \r\n", prev, next);
+    printf("LR = %x \r\n", next->cpu_context.x30_lr);
     cpu_switch_to(prev, next);
 }
 
@@ -28,7 +37,7 @@ void switch_to(struct task_struct * next){
 void _schedule(void){
     // this ensures that nested schedule will not be called
     preempt_disable(); 
-    
+    init_printf(0, putc);
     uint64_t next = 0;
     int64_t c = -1;
     struct task_struct * p;
@@ -41,7 +50,9 @@ void _schedule(void){
                 c = p->counter;
                 next = i;
             }
+            printf("Task %d  counter %d \r\n", i, p->counter);
         } 
+        printf("Number of task in scheduler found...? %d \r\n", c);
         // If no such task is found this means that no tasks in TASK_RUNNING state currently exist 
         // or all such tasks have 0 counters
         if(c) break;
@@ -57,9 +68,9 @@ void _schedule(void){
             }
         }
         // only 2 while iterations is possuble when there is exists task in running state.
-        switch_to(task[next]);
-        preempt_enable();
     }
+    switch_to(task[next]);
+    preempt_enable();
 }
 
 void schedule(void){
@@ -69,11 +80,22 @@ void schedule(void){
 
 //this function call from timer interrupt handler
 void timer_tick(void){
-    --(current->counter);
+
+    if(current->counter != 0){  // overflow safe
+        current->counter -= 1;
+    }
+
     if(current->counter > 0 || current->preempt_count > 0) return;
 
     current->counter = 0;
     enable_irq();
     _schedule();
     disable_irq();
+}
+
+extern void fork_ret(void);
+
+void debug_addr(uint64_t addr, uint64_t addr2){
+    uint64_t addr3 = (uint64_t)&fork_ret;
+    printf("Addr is %x %x %x", addr, addr2, addr3);
 }
