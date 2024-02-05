@@ -27,7 +27,8 @@ void switch_to(struct task_struct * next){
     struct task_struct * prev = current;
     current = next; // TODO amoswap?
     printf("switch to %x %x \r\n", prev, next);
-    printf("LR = %x \r\n", next->cpu_context.x30_lr);
+    printf("lr = %x, sp = %x \r\n", next->cpu_context.x30_lr, next->cpu_context.x31_sp);
+
     cpu_switch_to(prev, next);
 }
 

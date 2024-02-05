@@ -31,7 +31,7 @@ int64_t copy_process(uint64_t fn_addr, uint64_t arg){
     p->cpu_context.x20 = arg;
     p->cpu_context.x31_sp = ((uint64_t) TOP_OF_THE_PAGE(p)); // todo Crutch
     p->cpu_context.x30_lr = ((uint64_t) &fork_ret);
-    
+        
     printf("Copy process pc %u sp %u \r \n", p->cpu_context.x30_lr, p->cpu_context.x31_sp);
     printf("Page addr %x, TOP_OF_THE_PAGE %x \r \n", p, TOP_OF_THE_PAGE(p));
     int pid = number_of_runnning_tasks++;
@@ -40,14 +40,3 @@ int64_t copy_process(uint64_t fn_addr, uint64_t arg){
     return 0;
 }
 
-void dump1(void){
-    muart_send_string("dump1 \r\n");
-}
-
-void dump2(void){
-    muart_send_string("dump2 \r\n");
-}
-
-void dump3(void){
-    muart_send_string("dump3 \r\n");
-}

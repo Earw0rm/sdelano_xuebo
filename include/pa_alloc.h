@@ -9,8 +9,10 @@
 
 #define ADDR_ROUND_DOWN(x) (((uint64_t)(x)) & (~0xfff))
 #define PAGE_UP(x) ((((uint64_t)(x)) & (~0xfff)) + (0x1000))
-#define TOP_OF_THE_PAGE(x) ((((uint64_t)x) & (~0xfff)) + (0x1000 - 0x0004))
+#define TOP_OF_THE_PAGE(x) ((((uint64_t)x) & (~0xfff)) + (0x1000 - 0x0010))
 
+
+// #define TOP_OF_THE_PAGE(x) ((((uint64_t)x) & (~0xfff)) + (0x1000 - 0x0004))
 // legacy master view of physical memory
 #define PASTOP (0x400000000)
 #define SDRAM_BOT_2 (0x100000000)
