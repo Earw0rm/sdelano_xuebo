@@ -76,7 +76,6 @@ void timer_tick(void);
 void switch_to(struct task_struct * next);
 extern void cpu_switch_to(struct task_struct * prev, struct task_struct * next);
 
-void debug_addr(uint64_t addr, uint64_t addr2);
 
 #endif
 #endif 

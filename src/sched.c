@@ -26,8 +26,8 @@ void switch_to(struct task_struct * next){
     if(current == next) return;
     struct task_struct * prev = current;
     current = next; // TODO amoswap?
-    printf("switch to %x %x \r\n", prev, next);
-    printf("lr = %x, sp = %x \r\n", next->cpu_context.x30_lr, next->cpu_context.x31_sp);
+    // printf("switch to %x %x \r\n", prev, next);
+    // printf("lr = %x, sp = %x \r\n", next->cpu_context.x30_lr, next->cpu_context.x31_sp);
 
     cpu_switch_to(prev, next);
 }
@@ -51,9 +51,7 @@ void _schedule(void){
                 c = p->counter;
                 next = i;
             }
-            printf("Task %d  counter %d \r\n", i, p->counter);
         } 
-        printf("Number of task in scheduler found...? %d \r\n", c);
         // If no such task is found this means that no tasks in TASK_RUNNING state currently exist 
         // or all such tasks have 0 counters
         if(c) break;
@@ -81,7 +79,6 @@ void schedule(void){
 
 //this function call from timer interrupt handler
 void timer_tick(void){
-
     if(current->counter != 0){  // overflow safe
         current->counter -= 1;
     }
@@ -96,7 +93,3 @@ void timer_tick(void){
 
 extern void fork_ret(void);
 
-void debug_addr(uint64_t addr, uint64_t addr2){
-    uint64_t addr3 = (uint64_t)&fork_ret;
-    printf("Addr is %x %x %x", addr, addr2, addr3);
-}

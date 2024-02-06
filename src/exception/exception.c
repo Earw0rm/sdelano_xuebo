@@ -27,14 +27,15 @@ const char *entry_error_messages[] = {
     "ERROR_INVALID_EL0_32"
 };
 
-inline static void _sys_timer_handler(void){
-    sys_timer_recharge(3, SCHEDULER_RECHARGE_TIME);
-    timer_tick();
-}
 
+inline static void _eoi(uint32_t interrupt_id){
+    uint32_t eoi = GIC400_INTERFACES->eoi;
+    eoi |= interrupt_id;
+    GIC400_INTERFACES->eoi = eoi;
+}
 // this functiion can be call only after init_printf();
 void show_invalid_entry_message(uint32_t ex_type, uint32_t esr_el1, uint32_t elr_el1){
-    char err_msg =  *(entry_error_messages[ex_type]);
+    const char * err_msg = (entry_error_messages[ex_type]);
     printf("An exception occurred without a proper handler. \r\n Reason: %s, esr_el1: %u, elr_el1: %u. \r\n", err_msg, esr_el1, elr_el1);
 }
 
@@ -59,13 +60,11 @@ void handle_irq(void){
                 /* code */
             break;
         case SYS_TIMER_3:
-            _sys_timer_handler();
+            sys_timer_recharge(3, SCHEDULER_RECHARGE_TIME);
+            _eoi(interrupt_id);
+            timer_tick();
             break;
         default:
             break;
     }
-    uint32_t eoi = GIC400_INTERFACES->eoi;
-    eoi |= interrupt_id;
-    GIC400_INTERFACES->eoi = eoi;
-
 }

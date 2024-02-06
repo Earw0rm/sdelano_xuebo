@@ -3,9 +3,11 @@
 
 
 uint32_t sys_timer_init(void){
+
+    sys_timer_recharge(3, SCHEDULER_RECHARGE_TIME);
     uint32_t cl = SYSTEM_TIMER->counter_lower;
-    SYSTEM_TIMER->compare[3] = cl + SCHEDULER_RECHARGE_TIME;
-    SYSTEM_TIMER->control_status = 0b1000U;
+    // SYSTEM_TIMER->compare[3] = cl + SCHEDULER_RECHARGE_TIME;
+    // SYSTEM_TIMER->control_status = 0b1000U;
     return cl + SCHEDULER_RECHARGE_TIME;
 }
 
