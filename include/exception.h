@@ -33,6 +33,12 @@
 #include "common.h"
 void show_invalid_entry_message(uint32_t, uint32_t, uint32_t);
 void handle_irq(void);
+void handle_el0_sync(uint64_t, uint64_t,
+                     uint64_t, uint64_t,
+                     uint64_t, uint64_t,
+                     uint64_t, uint64_t,
+                     uint64_t);
+
 #endif
 
 

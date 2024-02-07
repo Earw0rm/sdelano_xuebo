@@ -78,7 +78,7 @@ vectors:
 	ventry	fiq_invalid_el1h			// FIQ EL1h
 	ventry	error_invalid_el1h			// Error EL1h
 
-	ventry	sync_invalid_el0_64	 // Synchronous 64-bit EL0
+	ventry	el0_sync	         // Synchronous 64-bit EL0
 	ventry	irq_invalid_el0_64	 // IRQ 64-bit EL0
 	ventry	fiq_invalid_el0_64   // FIQ 64-bit EL0
 	ventry	error_invalid_el0_64 // Error 64-bit EL0
@@ -140,9 +140,13 @@ el1_irq:
 	bl	handle_irq
 	kernel_exit 
 
+el0_sync:
+	kernel_entry 
+	bl	handle_el0_sync
+	kernel_exit
+
 .globl err_hang
 err_hang: b err_hang
-
 
 //vbar_el1 => vector base address register 
 //daif => part of the pstate

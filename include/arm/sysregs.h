@@ -50,4 +50,14 @@
 #define SPSR_EL1h     (5 << 0) // last time we are EL1 with h mode stack pointer (hypervisor)
 #define SPSR_VALUE    (SPSR_MASK_ALL | SPSR_EL1h)
 
+
+// ***************************************
+// ESR_EL1, Exception Syndrome Register (EL1) Page 6438 of AArch64-Reference-Manual (A-profile architecture reference manual).
+// Most important => EC, bits [31:26]
+// Exception Class. Indicates the reason for the exception that this register holds information about.
+// ***************************************
+#define ESR_EL1_REASON_SHIFT      26
+#define ESR_EL1_REASON_SVC (0b010101U << 26)
+
+
 #endif 

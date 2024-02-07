@@ -82,9 +82,7 @@ void timer_tick(void){
     if(current->counter != 0){  // overflow safe
         current->counter -= 1;
     }
-
     if(current->counter > 0 || current->preempt_count > 0) return;
-
     current->counter = 0;
     enable_irq();
     _schedule();

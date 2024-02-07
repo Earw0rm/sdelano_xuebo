@@ -5,6 +5,9 @@
 #include "sys_timer.h"
 #include "sched.h"
 #include "sys_timer.h"
+#include "arm/sysregs.h"
+#include "sys.h"
+
 const char *entry_error_messages[] = {
     "SYNC_INVALID_EL1t",
     "IRQ_INVALID_EL1t",
@@ -65,6 +68,27 @@ void handle_irq(void){
             timer_tick();
             break;
         default:
+            break;
+    }
+}
+
+
+void handle_el0_sync(uint64_t x0, uint64_t x1,
+                     uint64_t x2, uint64_t x3,
+                     uint64_t x4, uint64_t x5,
+                     uint64_t x6, uint64_t x7,
+                     uint64_t syscall_number){
+
+    uint64_t esr_el1 = get_exception_syndrome1();
+    uint64_t reason = (esr_el1 & (0x3fU << ESR_EL1_REASON_SHIFT));
+
+    switch (reason){
+        case ESR_EL1_REASON_SVC: 
+            handle_syscall(x0, x1, x2, x3, x4, x5, x6, x7, syscall_number);
+            break;
+        
+        default:
+            // TODO someproblems 
             break;
     }
 }
