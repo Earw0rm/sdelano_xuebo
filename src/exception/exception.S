@@ -1,6 +1,6 @@
 
 #include "exception.h"
-
+#include "arm/arm_util.h"
 // ***************************************
 // Exceptiom vector table, Page 5357 of AArch64-Reference-Manual (A-profile architecture reference manual).    
 // align 7 тк каждый уровень исключений находится на 0x80 границе
@@ -12,17 +12,7 @@
     b \label
 .endm
 
-
-.macro handle_invalid_entry type 
-    kernel_entry
-    mov x0, #\type
-    mrs x1, esr_el1
-    mrs x2, elr_el1
-    bl show_invalid_entry_message // panic
-    b err_hang
-.endm
-
-.macro kernel_entry
+.macro kernel_entry el
 	sub	sp, sp,   #S_FRAME_SIZE
 	stp	x0, x1,   [sp, #16 * 0]
 	stp	x2, x3,   [sp, #16 * 1]
@@ -39,10 +29,34 @@
 	stp	x24, x25, [sp, #16 * 12]
 	stp	x26, x27, [sp, #16 * 13]
 	stp	x28, x29, [sp, #16 * 14]
-	str	x30,      [sp, #16 * 15] 
+//	str	x30,      [sp, #16 * 15] 
+
+	
+	// level specific code 
+	.if \el == 0 // if we comming from el0
+		mrs x21, sp_el0
+	.else
+		add x21, sp, #S_FRAME_SIZE
+	.endif 
+
+	mrs x22, elr_el1 
+	mrs x23, spsr_el1
+
+	stp x30, x21, [sp, #16 * 15]
+	stp x22, x23, [sp, #16 * 16]	
 .endm
 
-.macro kernel_exit
+.macro kernel_exit el 
+	ldp x30, x21, [sp, #16 * 15]
+	ldp x22, x23, [sp, #16 * 16]
+
+	.if \el == 0
+		msr sp_el0, x21
+	.endif 
+
+	msr elr_el1,  x22 
+	msr spsr_el1, x23
+
 	ldp	x0, x1,   [sp, #16 * 0]
 	ldp	x2, x3,   [sp, #16 * 1]
 	ldp	x4, x5,   [sp, #16 * 2]
@@ -62,6 +76,17 @@
 	add	sp, sp, #S_FRAME_SIZE		
 	eret
 .endm
+
+.macro handle_invalid_entry el, type 
+    kernel_entry \el
+    mov x0, #\type
+    mrs x1, esr_el1
+    mrs x2, elr_el1
+    bl show_invalid_entry_message // panic
+    b err_hang
+.endm
+
+
 
 
 // таблица векторов обязана быть выровненной по 2^11
@@ -90,60 +115,60 @@ vectors:
 
 
 sync_invalid_el1t:
-	handle_invalid_entry  SYNC_INVALID_EL1t
+	handle_invalid_entry 1, SYNC_INVALID_EL1t
 
 irq_invalid_el1t:
-	handle_invalid_entry  IRQ_INVALID_EL1t
+	handle_invalid_entry 1, IRQ_INVALID_EL1t
 
 fiq_invalid_el1t:
-	handle_invalid_entry  FIQ_INVALID_EL1t
+	handle_invalid_entry 1, FIQ_INVALID_EL1t
 
 error_invalid_el1t:
-	handle_invalid_entry  ERROR_INVALID_EL1t
+	handle_invalid_entry 1, ERROR_INVALID_EL1t
 
 sync_invalid_el1h:
-	handle_invalid_entry  SYNC_INVALID_EL1h
+	handle_invalid_entry 1, SYNC_INVALID_EL1h
 
 fiq_invalid_el1h:
-	handle_invalid_entry  FIQ_INVALID_EL1h
+	handle_invalid_entry 1, FIQ_INVALID_EL1h
 
 error_invalid_el1h:
-	handle_invalid_entry  ERROR_INVALID_EL1h
+	handle_invalid_entry 1, ERROR_INVALID_EL1h
 
 sync_invalid_el0_64:
-	handle_invalid_entry  SYNC_INVALID_EL0_64
+	handle_invalid_entry 0, SYNC_INVALID_EL0_64
 
 irq_invalid_el0_64:
-	handle_invalid_entry  IRQ_INVALID_EL0_64
+	handle_invalid_entry 0, IRQ_INVALID_EL0_64
 
 fiq_invalid_el0_64:
-	handle_invalid_entry  FIQ_INVALID_EL0_64
+	handle_invalid_entry 0, FIQ_INVALID_EL0_64
 
 error_invalid_el0_64:
-	handle_invalid_entry  ERROR_INVALID_EL0_64
+	handle_invalid_entry 0, ERROR_INVALID_EL0_64
 
 sync_invalid_el0_32:
-	handle_invalid_entry  SYNC_INVALID_EL0_32
+	handle_invalid_entry 0, SYNC_INVALID_EL0_32
 
 irq_invalid_el0_32:
-	handle_invalid_entry  IRQ_INVALID_EL0_32
+	handle_invalid_entry 0, IRQ_INVALID_EL0_32
 
 fiq_invalid_el0_32:
-	handle_invalid_entry  FIQ_INVALID_EL0_32
+	handle_invalid_entry 0, FIQ_INVALID_EL0_32
 
 error_invalid_el0_32:
-	handle_invalid_entry  ERROR_INVALID_EL0_32
+	handle_invalid_entry 0, ERROR_INVALID_EL0_32
 
 // boolsheet, peredelat'
 el1_irq:
-	kernel_entry 
+	kernel_entry 1
 	bl	handle_irq
-	kernel_exit 
+	kernel_exit 1
 
 el0_sync:
-	kernel_entry 
+	kernel_entry 0
 	bl	handle_el0_sync
-	kernel_exit
+	kernel_exit 0
 
 .globl err_hang
 err_hang: b err_hang
@@ -156,3 +181,15 @@ irq_vector_init:
     msr vbar_el1, x0 
     ret 
 
+
+// for sys.S
+.globl call_table_and_ret
+call_table_and_ret:
+    blr x8
+    mov x0, x25        // just tmp save
+    msr daifset, #2
+    str x25, [sp, #16] //     str   x0, [sp, #S_X0]             // returned x0
+    kernel_exit 0
+
+    //TODO error here 
+    ret

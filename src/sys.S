@@ -24,3 +24,4 @@ call_sys_exit:
     mov w8, #SYS_EXIT_N
     svc #0
     ret
+
