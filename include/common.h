@@ -15,6 +15,8 @@ typedef enum {
     true
 } bool;
 
-#endif
+typedef uint64_t pte_t;
+typedef uint64_t* pagetable_t;
 
+#endif // __ASSEMBLER__
 #endif

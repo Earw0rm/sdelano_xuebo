@@ -7,7 +7,7 @@
 #define TRAPFRAME_OFFSET 104
 
 #ifndef __ASSEMBLER__
-
+#include "common.h"
 
 struct context {
     uint64_t x19; // 0

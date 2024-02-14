@@ -4,7 +4,7 @@
 #ifndef __ASSEMBLER__
 
 void configure_el3(void);
-void check(void);
-#endif 
+void kpgdentry_init(uint64_t tbl_adr, uint64_t va);
 
+#endif 
 #endif

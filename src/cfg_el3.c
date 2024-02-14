@@ -15,15 +15,10 @@ void configure_el3(void){
     gic400_enable_sys_timer(3);
 
 
-    uint32_t it_lines_support = get_num_of_it_lines_support();
-    printf("EL3 initialization is finished. GIC400 number of it_lines_support: %d \r\n. Dataframe: \r\n", it_lines_support);
-    for(uint32_t i = 0; i < (it_lines_support + 1); ++i){
-        uint32_t is_enabled_df = GIC400_DISTRIBUTOR->isenable[i];
-        printf("%d => %u \r\n", i, is_enabled_df);
-    }
 
+    printf("EL3 initialization is finished");
 }
-void check(void){
-    uint32_t check = 10;
-    printf("Check %d", check);
+
+void kpgdentry_init(uint64_t tbl_adr, uint64_t va){
+
 }
