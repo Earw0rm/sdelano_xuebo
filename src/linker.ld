@@ -17,8 +17,4 @@ SECTIONS
     bss_end = .;
     . = ALIGN(4096);
     _end_of_kernel_addr = .;
-    . = ALIGN(0x00001000);
-    pg_dir = .;
-    .data.pgd : {. += (4 * ( 1 << 12)); }
-    ############## we can push guard page here 
 }

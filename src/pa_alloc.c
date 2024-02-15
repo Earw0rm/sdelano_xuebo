@@ -2,7 +2,7 @@
 #include "common.h"
 
 
-
+// each page it is pointer to LOWER address.
 struct run * freepages = ((struct run*) TERMINAL_PAGE);
 
 // astart must be less then astop
