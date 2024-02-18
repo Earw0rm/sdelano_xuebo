@@ -3,78 +3,9 @@
 #include "utils.h"
 #include "gpio.h"
 
+
+
 void muart_init(void){
-
-    //set gpio 14 and 15 as alternative 5 (mini uart tx1 rx1)
-    uint32_t sel = get32(GPFSEL1);    
-    // FLES 14 [12:14], FSEL 15 [15:17]
-    sel &= (~(7 << 12) | (~(7 << 15))); // clean 3 bit [12:14] [15:17]
-    sel |= ((2 << 12) | (2 << 15)); // set alternative 5 
-    
-    put32(GPFSEL1, sel);
-
-    // select NO pull_up/pull_down for 14 and 15 pins
-    sel = get32(GPIO_PUP_PDN_CNTRL_REG0);
-
-    sel &= ((~(3 << 30)) | (~(3 << 28))); 
-
-    put32(GPIO_PUP_PDN_CNTRL_REG0, sel);
-
-
-    // turn off all possible interrupts for 14 and 15 pins
-    sel = get32(GPREN0);
-    sel &= ((~(1 << 14)) | (~(1 << 15)));
-    put32(GPREN0, sel);
-
-    sel = get32(GPFEN0);
-    sel &= ((~(1 << 14)) | (~(1 << 15)));
-    put32(GPFEN0, sel);
-
-    sel = get32(GPHEN0);
-    sel &= ((~(1 << 14)) | (~(1 << 15)));
-    put32(GPHEN0, sel);
-
-    sel = get32(GPLEN0);
-    sel &= ((~(1 << 14)) | (~(1 << 15)));
-    put32(GPLEN0, sel);
-
-    sel = get32(GPAREN0);
-    sel &= ((~(1 << 14)) | (~(1 << 15)));
-    put32(GPAREN0, sel);
-
-    sel = get32(GPAFEN0);
-    sel &= ((~(1 << 14)) | (~(1 << 15)));
-    put32(GPAFEN0, sel);
-
-
-    // enable access to AUX registers
-    sel = get32(AUX_ENABLES);
-    sel = 1;
-    put32(AUX_ENABLES, sel);
-
-    // disable tx/rx and other stuff (RTS CTS) 
-    put32(AUX_MU_CNTL_REG, 0); 
-
-    // disable interrupts 
-    put32(AUX_MU_IER_REG, 0);
-
-    sel = get32(AUX_MU_IIR_REG);
-    sel &= (~(3 << 1));
-    put32(AUX_MU_IIR_REG, sel);
-
-
-    put32(AUX_MU_LCR_REG, 3); // 8 bit cfg
-    put32(AUX_MU_MCR_REG, 0); // set line HIGH
-
-    // set baud rate
-    put32(AUX_MU_BAUD_REG, AUX_MU_BAUD(115200));
-
-
-    //finaly enable muart 
-    put32(AUX_MU_CNTL_REG, 3); 
-}
-
-void muart_init2(void){
     uint32_t sel = GPIO_REGS->func_select[1];
     
     // FLES 14 [12:14], FSEL 15 [15:17]

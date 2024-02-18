@@ -7,14 +7,33 @@ SECTIONS
 {
     . = 0xffff000000000000;
     _boot_start_addr = .;
-    .text.boot : { *(.text.boot) }
-    .text :  { *(.text) }
-    .rodata : { *(.rodata) }
-    .data : { *(.data) }
-    . = ALIGN(0x8);
+    .text.boot : {
+    
+         *(.text.boot)      
+    }
+
+    .text :  { 
+        *(.text)
+    }
+
+    .rodata : {
+         *(.rodata)
+    }
+
+    .data : { 
+        *(.data) 
+    }
+  
     bss_begin = .;
-    .bss : { *(.bss*) } 
+    
+
+    .bss : { 
+
+        *(.bss*) 
+
+    }
+
     bss_end = .;
-    . = ALIGN(4096);
+    . += 0x1000;
     _end_of_kernel_addr = .;
 }

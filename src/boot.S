@@ -1,6 +1,4 @@
-//#include "mm.h"
 #include "arm/sysregs.h"
-#include "arm/cfg_el3.h"
 #include "pa_alloc.h"
 .section ".text.boot"
 
@@ -8,51 +6,28 @@
 _start:
     mrs x0, mpidr_el1
     and x0, x0, #0xFF // check processor id
-    cbz x0, master // hang for all non-primary CPU
+    
+    add x1, x0, #1
+    lsl x1, x1, #12
+
+    adr x2, init_stack3
+    add x1, x1, x2 
+    mov sp, x1     
+
+    cbz x0, configure_el3 // hang for all non-primary CPU
     b proc_hang
 
 proc_hang:
     wfi
     b proc_hang
-
-
-master:
-    ldr x1, =SP_EL1_MASTER 
-    msr sp_el1, x1
-
-    ldr x1, =SP_EL3_MASTER
-    mov sp, x1  // sp_el3
-
-    ldr x1, =SP_EL0_MASTER // sp_el0
-    msr sp_el0, x1
-
-    bl configure_el3
-
-    ldr x0, =SCTLR_VALUE_MMU_DISABLED
-    msr sctlr_el1, x0
-
-    ldr x0, =HCR_VALUE
-    msr hcr_el2, x0
-
-    ldr x0, =SCR_VALUE
-    msr scr_el3, x0
-
-    ldr x0, =SPSR_VALUE
-    msr spsr_el3, x0
-
-    adr x0, el1_entry
-    msr elr_el3, x0
-
-
-    eret
     
 el1_entry:
-    adr x0, bss_begin
-    adr x1, bss_end
-    bl zero_range
+// why do we need do this? coze of manual?
+//    adr x0, bss_begin
+//    adr x1, bss_end
+//    bl zero_range 
 
     ldr x2, =vectors
     msr vbar_el1, x2
-    
     bl kernel_main
     b proc_hang

@@ -20,10 +20,14 @@
 #define VC_BASE_TOP   (0x40000000)
 #define VC_BASE_BOT (VC_BASE_TOP - 0x10000000) // 256 mb vc sdram
 
-#define TERMINAL_PAGE (KERNEL_GUARD_PAGE + 1*PAGE_SIZE)
-#define KERNEL_GUARD_PAGE (PA_KERNEL_END + 1*PAGE_SIZE)
-#define PA_KERNEL_END (&_end_of_kernel_addr)
 
+#define PA_KERNEL_END (&_end_of_kernel_addr)
+#define TERMINAL_PAGE (PA_KERNEL_END + 1*PAGE_SIZE)
+
+#define KERNEL_GUARD_PAGE (TERMINAL_PAGE)
+
+
+#define MASTER_STACK (KERNEL_GUARD_PAGE + PAGE_SIZE)
 
 // 3 base master stack and guard pages
 #define SP_EL0_MASTER_GUARD_PAGE_START (SDRAM_TOP - 1*PAGE_SIZE)

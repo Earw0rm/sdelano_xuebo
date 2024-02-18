@@ -52,7 +52,7 @@ struct AuxRegs{
 // txd1 & rxd1 это auxilary I/O. На gpio надо включить что бы mini uart работал. 
 // gpio 14 and 15 must be SEL 5
 void muart_init(void);
-void muart_init2(void);
+
 char muart_recv(void);
 void muart_send(char c);
 void muart_send_string(char* str);
