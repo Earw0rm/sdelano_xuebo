@@ -9,6 +9,7 @@
 
 #define S_FRAME_SIZE 256 // stack frame size (maximum)
 
+
 #define SYNC_INVALID_EL1t    0 
 #define IRQ_INVALID_EL1t     1 
 #define FIQ_INVALID_EL1t     2 
@@ -41,6 +42,8 @@ void handle_el0_sync(uint64_t, uint64_t,
                      
 void* call_table_and_ret(uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3, uint64_t x4, 
                          uint64_t x5, uint64_t x6, uint64_t x7, uint64_t fn_addr);
+                         
+void el3_panic_msg(uint64_t, uint64_t);
 #endif
 
 

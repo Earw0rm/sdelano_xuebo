@@ -23,7 +23,6 @@
 
 #define PA_KERNEL_END (&_end_of_kernel_addr)
 #define TERMINAL_PAGE (PA_KERNEL_END + 1*PAGE_SIZE)
-
 #define KERNEL_GUARD_PAGE (TERMINAL_PAGE)
 
 

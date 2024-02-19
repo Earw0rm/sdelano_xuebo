@@ -5,7 +5,6 @@
 
 SECTIONS
 {
-    . = 0xffff000000000000;
     _boot_start_addr = .;
     .text.boot : {
     

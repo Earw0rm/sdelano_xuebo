@@ -4,9 +4,6 @@
 // ***************************************
 // SCTLR_EL1, System Control Register (EL1), Page 6972 of AArch64-Reference-Manual (A-profile architecture reference manual).
 // ***************************************
-
-
-
 #define SCTLR_RESERVED ((3 << 28) | (3 << 22) | (1 << 20) | (1 << 11))
 
 #define SCTLR_EE_LITTLE_ENDIAN  (0 << 25)

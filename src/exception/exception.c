@@ -7,6 +7,8 @@
 #include "sys_timer.h"
 #include "arm/sysregs.h"
 #include "sys.h"
+#include "mini_uart.h"
+
 
 const char *entry_error_messages[] = {
     "SYNC_INVALID_EL1t",
@@ -40,6 +42,10 @@ inline static void _eoi(uint32_t interrupt_id){
 void show_invalid_entry_message(uint32_t ex_type, uint32_t esr_el1, uint32_t elr_el1){
     const char * err_msg = (entry_error_messages[ex_type]);
     printf("An exception occurred without a proper handler. \r\n Reason: %s, esr_el1: %u, elr_el1: %u. \r\n", err_msg, esr_el1, elr_el1);
+}
+
+void el3_panic_msg(uint64_t, uint64_t){
+    muart_send_string("El3_panic \r\n");
 }
 
 // In GICv2, when using a software model with the GICC_CTLR.AckCtl bit set to 0, separate registers
