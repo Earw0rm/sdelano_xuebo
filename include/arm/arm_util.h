@@ -106,6 +106,26 @@ static inline uint64_t r_vbar_el3(void){
     return x;
 }
 
-#endif 
+static inline void w_sp_el0(uint64_t x){
+    asm volatile("msr sp_el0, %0" : : "r" (x));
+}
 
+static inline uint64_t r_sp_el0(void){
+    uint64_t x;
+    asm volatile("mrs %0, sp_el0" : "=r" (x));
+    return x;
+}
+
+static inline void w_sp_el1(uint64_t x){
+    asm volatile("msr sp_el1, %0" : : "r" (x));
+}
+
+static inline uint64_t r_sp_el1(void){
+    uint64_t x;
+    asm volatile("mrs %0, sp_el1" : "=r" (x));
+    return x;
+}
+
+
+#endif 
 #endif

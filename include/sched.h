@@ -9,85 +9,6 @@
 #ifndef __ASSEMBLER__
 #include "common.h"
 
-struct context {
-    uint64_t x19; // 0
-    uint64_t x20; // 8
-    uint64_t x21; // 16
-    uint64_t x22; // 24
-    uint64_t x23; // 32
-    uint64_t x24; // 40
-    uint64_t x25; // 48
-    uint64_t x26; // 56
-    uint64_t x27; // 64
-    uint64_t x28; // 72
-    uint64_t x29_fp; // 80 // frame pointer
-    uint64_t x30_lr; // 88 // link register
-    uint64_t x31_sp; // 96 // stack pointer for current thread    
-};
-
-struct trapframe{
-    uint64_t sp_el0;
-	uint64_t elr_el1; 
-	uint64_t spsr_el1;
-
-    uint64_t x0;
-    uint64_t x1;
-    uint64_t x2;
-    uint64_t x3;
-    uint64_t x4;
-    uint64_t x5;
-    uint64_t x6;
-    uint64_t x7;
-    uint64_t x8;
-    uint64_t x9;
-    uint64_t x10;
-    uint64_t x11;
-    uint64_t x12;
-    uint64_t x13;
-    uint64_t x14;
-    uint64_t x15;
-    uint64_t x16;
-    uint64_t x17;
-    uint64_t x18;
-    //callee safe
-    uint64_t x19;
-    uint64_t x20;
-    uint64_t x21;
-    uint64_t x22;
-    uint64_t x23;
-    uint64_t x24;
-    uint64_t x25;
-    uint64_t x26;
-    uint64_t x27;
-    uint64_t x28;
-    uint64_t x29_fp; // frame pointer
-    uint64_t x30_lr; // link register
-    uint64_t x31_sp; // stack pointer for current thread    
-};
-
-enum procstate{
-    RUNNING, ZOMBIE 
-};
-
-// per-process state(beta)
-struct proc{
-    struct trapframe * trapframe; // 104
-    enum procstate state;         // 280
-    int64_t preempt_count;
-    int64_t xstate;
-    int64_t pid;
-
-    struct proc * parent;
-};
-
-// per-cpu state (beta)
-struct cpu{
-    struct context context;
-    struct proc * proc; // 104 
-};
-
-//TODO implement
-// extern struct cpu cpus[NCPU];
 
 
 
@@ -140,7 +61,9 @@ struct task_struct{
     // If timer tick occurs at such time it is ignored and rescheduling is not triggered.
     int64_t preempt_count;
 
-    uint64_t stack;
+    uint64_t stack0;
+    uint64_t stack1;
+
     uint64_t flags;
 };
 
@@ -148,20 +71,25 @@ struct task_struct{
 // the one that runs kernel_main function. It is called "init task".
 // Before the scheduler functionality is enabled, we must fill task_struct corresponding
 // to the init task. This is done here.
-#define INIT_TASK \
-/*cpu_context*/	{ {0,0,0,0,0,0,0,0,0,0,0,0,0}, \
-/*state etc*/	   0, 0, 1, 0 \
+#define INIT_TASK { \
+    .cpu_context   = {0}, \
+    .state         = 0,   \
+    .counter       = 0,   \
+    .priority      = 1,   \
+    .preempt_count = 1,   \
+    .stack0        = 0,   \
+    .stack1        = 0,   \
+    .flags         = 1    \
 }
 
-
-
+void init_task_initialization(uint64_t stack0, uint64_t stack1);
 void preempt_disable(void);
 void preempt_enable(void);
 void schedule(void);
 void timer_tick(void);
 void switch_to(struct task_struct * next);
 extern void cpu_switch_to(struct task_struct * prev, struct task_struct * next);
-
+extern bool init_task_is_initialized;
 
 #endif
 #endif 

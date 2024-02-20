@@ -11,6 +11,14 @@ struct task_struct * current = &(init_task);
 struct task_struct * task[NR_TASKS] = {&(init_task), };
 uint64_t number_of_runnning_tasks = 1;
 
+bool init_task_is_initialized = false;
+
+void init_task_initialization(uint64_t stack0, uint64_t stack1){
+    init_task.stack0 = stack0;
+    init_task.stack1 = stack1;
+    
+    init_task_is_initialized = true;
+}
 
 void preempt_disable(void){
     current->preempt_count++;

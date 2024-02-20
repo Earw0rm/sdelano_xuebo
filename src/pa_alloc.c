@@ -18,8 +18,11 @@ bool zero_range(uint64_t * astart, uint64_t * astop){
 }
 
 uint64_t init_pa_alloc(void){
+    //TODO there's a bug here. The number of pages returned from the method is 1 more than it should be
+
+
     //we have 2 ranges of memory. One befor VC sdram one after.
-    uint64_t * sdram_range_1 = ((uint64_t *) SP_EL3_BOT_MASTER_GUARD_PAGE_STOP);
+    uint64_t * sdram_range_1 = ((uint64_t *) SDRAM_TOP);
     uint64_t * sdram_range_1_end = ((uint64_t *) VC_BASE_TOP);
 
     uint64_t * sdram_range_2 = ((uint64_t *) VC_BASE_BOT);
