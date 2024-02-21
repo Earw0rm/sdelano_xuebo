@@ -1,6 +1,6 @@
 #include "pa_alloc.h"
 #include "common.h"
-
+#include "printf.h"
 
 // each page it is pointer to LOWER address.
 struct run * freepages = ((struct run*) TERMINAL_PAGE);
@@ -20,29 +20,56 @@ bool zero_range(uint64_t * astart, uint64_t * astop){
 uint64_t init_pa_alloc(void){
     //TODO there's a bug here. The number of pages returned from the method is 1 more than it should be
 
-
-    //we have 2 ranges of memory. One befor VC sdram one after.
-    uint64_t * sdram_range_1 = ((uint64_t *) SDRAM_TOP);
-    uint64_t * sdram_range_1_end = ((uint64_t *) VC_BASE_TOP);
-
-    uint64_t * sdram_range_2 = ((uint64_t *) VC_BASE_BOT);
-    uint64_t * sdram_range_2_end = ((uint64_t *) KERNEL_GUARD_PAGE);
+    
+    // ranges of memory
+    // KERNEL_GUARD_PAGE => VC_BASE_BOT; VC_BASE_TOP => SDRAM_TOP; SDRAM_BOT => PASTOP 
+    // important point that page is pointer to bottom address
+    // then, for example if we need to allocate page for stack, we need to get top address of the page
 
     uint64_t alloc_pages_counter = 0;
-    for(;sdram_range_2_end < sdram_range_2; sdram_range_2_end += PAGE_SIZE){
-        struct run * page = (struct run *) sdram_range_2_end;
+
+    uint64_t * sdram_range_1 = ((uint64_t *) KERNEL_GUARD_PAGE);
+    uint64_t * sdram_range_1_end = ((uint64_t *) VC_BASE_BOT);
+
+    uint64_t * sdram_range_2 = ((uint64_t *) VC_BASE_TOP);
+    uint64_t * sdram_range_2_end = ((uint64_t *) SDRAM_TOP);
+
+    uint64_t * sdram_range_3 = ((uint64_t *) SDRAM_BOT);
+    uint64_t * sdram_range_3_end = ((uint64_t *) PASTOP);
+
+
+    printf("Ranges of pa_alloc %X => %X, %X => %X, %X => %X \r\n",
+     KERNEL_GUARD_PAGE,
+     VC_BASE_BOT,
+     VC_BASE_TOP,
+     SDRAM_TOP,
+     SDRAM_BOT,
+     PASTOP);
+
+
+    for(;sdram_range_1 < sdram_range_1_end; sdram_range_1 += PAGE_SIZE){
+        struct run * page = (struct run *) sdram_range_1;
         page->next = freepages;
         freepages = page;
         ++alloc_pages_counter;
+        if(alloc_pages_counter % 100000 == 0) printf("Init address of pa1 = %x \r\n", sdram_range_1);
     }
-    for(;sdram_range_1_end < sdram_range_1;sdram_range_1_end += PAGE_SIZE){
-        struct run * page = (struct run *) sdram_range_1_end;
+
+    for(;sdram_range_2 < sdram_range_2_end; sdram_range_2 += PAGE_SIZE){
+        struct run * page = (struct run *) sdram_range_2;
         page->next = freepages;
         freepages = page;
         ++alloc_pages_counter;
+        if(alloc_pages_counter % 100000 == 0) printf("Init address of pa2 = %x \r\n", sdram_range_2);
     }
-
-
+    for(;sdram_range_3 < sdram_range_3_end; sdram_range_3 += PAGE_SIZE){
+        struct run * page = (struct run *) sdram_range_3;
+        page->next = freepages;
+        freepages = page;
+        ++alloc_pages_counter;
+        if(alloc_pages_counter % 100000 == 0) printf("Init address of pa3 = %x \r\n", sdram_range_3);
+    }
+    printf("Ret \r\n");
     return alloc_pages_counter;
 }
 

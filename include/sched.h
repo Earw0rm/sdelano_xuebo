@@ -46,6 +46,9 @@ struct cpu_context {
 };
 struct task_struct{
     struct cpu_context cpu_context;
+    
+    uint64_t stack0;
+    uint64_t stack1;
 
     task_state state;
     // This field is used to determine how long the current task has been running.
@@ -61,8 +64,7 @@ struct task_struct{
     // If timer tick occurs at such time it is ignored and rescheduling is not triggered.
     int64_t preempt_count;
 
-    uint64_t stack0;
-    uint64_t stack1;
+
 
     uint64_t flags;
 };
@@ -73,16 +75,17 @@ struct task_struct{
 // to the init task. This is done here.
 #define INIT_TASK { \
     .cpu_context   = {0}, \
+    .stack0        = 0,   \
+    .stack1        = 0,   \
     .state         = 0,   \
     .counter       = 0,   \
     .priority      = 1,   \
     .preempt_count = 1,   \
-    .stack0        = 0,   \
-    .stack1        = 0,   \
     .flags         = 1    \
 }
 
 void init_task_initialization(uint64_t stack0, uint64_t stack1);
+
 void preempt_disable(void);
 void preempt_enable(void);
 void schedule(void);

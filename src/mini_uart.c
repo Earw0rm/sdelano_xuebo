@@ -101,6 +101,10 @@ void muart_send_string(char* str){
         muart_send((char) str[i]);
     }
 }
+void putc2(void* p, char c){
+    muart_send(c);
+}
+
 
 void putc(void* p, char c){
     muart_send(c);

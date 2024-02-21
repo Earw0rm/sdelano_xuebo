@@ -20,10 +20,10 @@ static inline void stack_test(){
 
 void configure_el3(void){
     muart_init();
+
+    w_vbar_el3((uint64_t) &el3_vec);
     init_printf(0, putc);
     printf("[EL3]: Configuration start. \r \n");
-    w_vbar_el3((uint64_t) &el3_vec);
-
 
     gic400_init();
     sys_timer_init();
@@ -38,12 +38,24 @@ void configure_el3(void){
     w_elr_el3((uint64_t) &kernel_main);
     w_vbar_el1((uint64_t) &vectors);
 
+
+
+
     // todo for local test
     uint64_t num_of_init_pages = init_pa_alloc();
     uint64_t pages_after_init = get_num_of_free_pages();
 
+
     uint64_t itstack0 = get_page();
     uint64_t itstack1 = get_page();
+    
+
+    if(itstack0 == 0 || itstack1 == 0){
+        printf("[EL3]: PANIC! itstack0: %d; itstack1: %d  \r \n", itstack0, itstack1);
+        return;
+    }
+    itstack0 = PAGE_UP(itstack0);
+    itstack1 = PAGE_UP(itstack1);
 
     w_sp_el0(itstack0);
     w_sp_el1(itstack1);
@@ -53,10 +65,7 @@ void configure_el3(void){
 
     asm volatile("dsb sy");
 
-    if(itstack0 == 0 || itstack1 == 0){
-        printf("[EL3]: PANIC! itstack0: %d; itstack1: %d  \r \n", itstack0, itstack1);
-        return;
-    }
+
     if(!init_task_is_initialized){
         printf("[EL3]: PANIC! Init task is not initialized. \r\n");
         return;
@@ -72,7 +81,7 @@ void configure_el3(void){
     printf("[EL3]: elr_el3 value addres: %x. \r \n", r_elr_el3());
     printf("[EL3]: vbar_el1 vector addres: %x. \r \n", r_vbar_el1());
     printf("[EL3]: vbar_el3 vector addr: %X. \r \n", r_vbar_el3());
-    
+
     printf("[EL3]: sp_el0 addr: %X. \r \n", r_sp_el0());
     printf("[EL3]: sp_el1 addr: %X. \r \n", r_sp_el1());
 
@@ -82,7 +91,7 @@ void configure_el3(void){
     printf("[EL3]: Num of free pages after get : %d. \r \n", pages_after_init);
 
     printf("[EL3]: Configuration is completed. Jump to kernel main. \r \n");
-    // УСТАНОВИ СТЭК В EL0 & EL1 ПЕРЕД ПЕРЕХОДОМ В EL1 TVAR' 
-    asm volatile("eret");
+    
+    asm volatile("eret"); // Jump to kernel_main, el1h 
 }
 

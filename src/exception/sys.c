@@ -33,6 +33,6 @@ void handle_syscall(uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3, uint64_t
         return; 
     }
     void* res = syscall_table[syscall_num];
-    call_table_and_ret(x0, x1, x2, x3, x4, x5, x6, x7, (uint64_t) res);
+    // call_table_and_ret(x0, x1, x2, x3, x4, x5, x6, x7, (uint64_t) res);
     // error 
 }

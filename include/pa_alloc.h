@@ -14,11 +14,12 @@
 
 // #define TOP_OF_THE_PAGE(x) ((((uint64_t)x) & (~0xfff)) + (0x1000 - 0x0004))
 // legacy master view of physical memory
-#define PASTOP (0x400000000)
-#define SDRAM_BOT_2 (0x100000000)
-#define SDRAM_TOP (0xFC000000)
+#define PASTOP        (0x1f9999999) // 8gb rpi 
+#define SDRAM_BOT     (0x100000000)
+#define SDRAM_TOP     (0xFC000000)
 #define VC_BASE_TOP   (0x40000000)
-#define VC_BASE_BOT (VC_BASE_TOP - 0x10000000) // 256 mb vc sdram
+//todo set variable from makefile and config.txt
+#define VC_BASE_BOT   (VC_BASE_TOP - 0x10000000) // 256 mb vc sdram
 
 
 #define PA_KERNEL_END (&_end_of_kernel_addr)
