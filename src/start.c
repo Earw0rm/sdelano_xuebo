@@ -62,8 +62,8 @@ void configure_el3(void){
 
     init_task_initialization(itstack0, itstack1);
 
-
-    asm volatile("dsb sy");
+    
+    asm volatile("isb");
 
 
     if(!init_task_is_initialized){
@@ -93,5 +93,8 @@ void configure_el3(void){
     printf("[EL3]: Configuration is completed. Jump to kernel main. \r \n");
     
     asm volatile("eret"); // Jump to kernel_main, el1h 
+    printf("[EL3] PANIC! Return into start.");
+    while (1);
+    
 }
 

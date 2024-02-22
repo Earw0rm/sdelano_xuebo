@@ -1,6 +1,6 @@
 #include "vm.h"
 #include "pa_alloc.h"
-
+#include "arm/arm_util.h"
 
 // Return the address of the PTE in page table pagetable
 // that corresponds to virtual address va.  If alloc!=0,
@@ -23,4 +23,8 @@ pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc){
     }
 
     return &pagetable[VA_PTBL_IND(3, va)]; // last 3nd level without offset
+}
+
+void init_mmu(void){
+    
 }
