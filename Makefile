@@ -2,14 +2,12 @@
 ## https://www.opensourceforu.com/2012/06/gnu-make-in-detail-for-beginners/
 #########################
 
-RPI_VERSION ?=4
-
 BOOTMNT ?=/media/foer/bootfs
 
 ARMGNU ?=aarch64-linux-gnu
 
-COPS =-DRPI_VERSION=$(RPI_VERSION) -Wall -nostdlib -nostartfiles -ffreestanding \
-	-Iinclude -mgeneral-regs-only
+COPS =-Wall -nostdlib -nostartfiles -ffreestanding \
+	-Iinclude -mgeneral-regs-only -g
 
 ASMOPS =-Iinclude
 
@@ -17,6 +15,12 @@ BUILD_DIR=build
 SRC_DIR=src
 
 all: kernel8.img
+
+debug: kernel8.elf
+	gdb-multiarch build/kernel8.elf -ex "target extended-remote localhost:3333" -ex "load"
+
+ocd:
+	openocd -f adafruit-ft232h.cfg -f rpi4.cfg
 
 clean:
 	rm -rf $(BUILD_DIR) *.img
@@ -38,18 +42,12 @@ DEP_FILES = $(OBJ_FILES:%.o=%.d)
 -include $(DEP_FILES)
 
 
-kernel8.img: $(SRC_DIR)/linker.ld $(OBJ_FILES)
-	@echo "Building for RPO $(value RPI_VERSION)"
-	@echo "Deploy to $(value BOOTMNT)"
-	@echo ""
+kernel8.elf: $(SRC_DIR)/linker.ld $(OBJ_FILES)
 	$(ARMGNU)-ld -T $(SRC_DIR)/linker.ld -o $(BUILD_DIR)/kernel8.elf $(OBJ_FILES)
+
+kernel8.img: kernel8.elf
 	$(ARMGNU)-objcopy $(BUILD_DIR)/kernel8.elf -O binary kernel8.img 
 	$(ARMGNU)-objdump -D $(BUILD_DIR)/kernel8.elf > $(BUILD_DIR)/__debug.txt
-
-ifeq ($(RPI_VERSION), 4)
 	cp kernel8.img $(BOOTMNT)/
-else
-	cp kernel8.img $(BOOTMNT)/
-endif
 	cp config.txt $(BOOTMNT)/
 	sync

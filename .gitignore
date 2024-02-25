@@ -4,3 +4,4 @@ dbug.txt
 build
 kernel*
 config.backup.txt
+.gdb_history

@@ -4,3 +4,11 @@ disable_commandline_tags=1
 core_freq_min=250
 enable_gic=1
 gpu_mem=256
+dtoverlay = disable-bt
+
+
+#disable pull downs for jtag pins 
+gpio=22-27=np
+
+#enable jtag pins (i.e. GPIO22-GPIO27)
+enable_jtag_gpio=1
