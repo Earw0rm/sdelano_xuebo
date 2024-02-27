@@ -14,9 +14,7 @@ extern char el3_vec[]; // exception.S
 extern void kernel_main(void);
 
 
-static inline void stack_test(){
 
-}
 
 void configure_el3(void){
     muart_init();
@@ -35,8 +33,7 @@ void configure_el3(void){
     w_spsr_el3(SPSR_VALUE);
 
 
-    w_elr_el3((uint64_t) &kernel_main);
-    w_vbar_el1((uint64_t) &vectors);
+   
 
 
 
@@ -54,15 +51,27 @@ void configure_el3(void){
         printf("[EL3]: PANIC! itstack0: %d; itstack1: %d  \r \n", itstack0, itstack1);
         return;
     }
-    itstack0 = PAGE_UP(itstack0);
-    itstack1 = PAGE_UP(itstack1);
+
+
+    itstack0 = PAGE_UP(itstack0) | VAKERN_BASE;
+    itstack1 = PAGE_UP(itstack1) | VAKERN_BASE;
+
+    w_elr_el3((uint64_t)  (((uint64_t) &kernel_main) | VAKERN_BASE)); 
+    w_vbar_el1((uint64_t) (((uint64_t) &vectors) | VAKERN_BASE));
 
     w_sp_el0(itstack0);
     w_sp_el1(itstack1);
 
     init_task_initialization(itstack0, itstack1);
 
-    
+    pagetable_t pgtbl = init_mmu();
+    if(pgtbl == 0){
+        printf("[EL3]: PANIC! MMU initialization fail.");
+        return;
+    }
+
+    w_ttbr1_el1((((uint64_t) pgtbl) | VAKERN_BASE));
+
     asm volatile("isb");
 
 

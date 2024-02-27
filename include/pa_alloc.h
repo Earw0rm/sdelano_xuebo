@@ -29,7 +29,7 @@
 
 
 #ifndef __ASSEMBLER__
-extern const int _end_of_kernel_addr;
+extern const char _end_of_kernel_addr;
 
 
 struct run{

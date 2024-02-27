@@ -179,5 +179,16 @@ static inline uint64_t r_ttbr1_el1(void){
     return x;
 }
 
+static inline uint64_t r_mpidr_el1(void){
+    uint64_t x;
+    asm volatile("mrs %0, mpidr_el1" : "=r" (x));
+    return x;
+}
+
+static inline uint64_t get_processor_id(void){
+    return (r_mpidr_el1() & 0xff);
+}
+
+
 #endif 
 #endif
