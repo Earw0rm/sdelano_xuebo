@@ -3,7 +3,7 @@
 #include "arm/arm_util.h"
 
 
-__attribute__((aligned(16))) char kpgtbl[4096 * 4];
+__attribute__((aligned(16))) char kpgtbl[4096 * 4] = {0};
 
 // Return the address of the PTE in page table pagetable
 // that corresponds to virtual address va.  If alloc!=0,
@@ -13,8 +13,10 @@ pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc){
 
     for(uint64_t level = 1; level <= 2; ++level){
 
-        pte_t *pte = &pagetable[VA_PTBL_IND(level, va)];
-        if((*pte & VALID_DESCRIPTOR) == 1){ // mean that PTE is valid
+        uint64_t pgtbl_index = VA_PTBL_IND(level, va);
+        pte_t *pte = &pagetable[pgtbl_index];
+
+        if(((*pte) & VALID_DESCRIPTOR) == 1){ // mean that PTE is valid
             pagetable = (pagetable_t)PTE2PA(pte);
         }else{
             if(!alloc) return 0;
@@ -46,3 +48,5 @@ pagetable_t init_mmu(void){
     }
     return pgtbl;
 }
+
+

@@ -23,8 +23,9 @@ SECTIONS
     .data : { 
         *(.data) 
     }
-  
-    bss_begin = .;
+    
+    . += 1000;
+    _bss_begin = .;
     
 
     .bss : { 
@@ -32,8 +33,8 @@ SECTIONS
         *(.bss*) 
 
     }
-
-    bss_end = .;
+    
+    _bss_end = .;
     . += 0x1000;
     _end_of_kernel_addr = .;
 }

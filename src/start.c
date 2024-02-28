@@ -7,22 +7,28 @@
 #include "arm/sysregs.h"
 #include "sched.h"
 
-__attribute__((aligned(16))) char init_stack3[4096 * 4];
+__attribute__((aligned(16))) char init_stack3[4096 * 4] = {0};
 
 extern char vectors[]; // exception.S
 extern char el3_vec[]; // exception.S
 extern void kernel_main(void);
 extern void putc(void* p, char c);
 
-
+extern uint64_t  * __bss_begin;
+extern uint64_t  * __bss_end;
 
 void configure_el3(void){
-
 
     muart_init();
 
     w_vbar_el3((uint64_t) &el3_vec);
     init_printf(0, putc);
+    
+    if(!zero_range(__bss_begin, __bss_end)){
+        printf("[EL3]: Cannot free bss region. Return. \r \n");
+        return;        
+    }
+
     printf("[EL3]: Configuration start. \r \n");
 
     gic400_init();
@@ -68,7 +74,7 @@ void configure_el3(void){
 
     pagetable_t pgtbl = init_mmu();
 
-    
+
     if(pgtbl == 0){
         printf("[EL3]: PANIC! MMU initialization fail.");
         return;

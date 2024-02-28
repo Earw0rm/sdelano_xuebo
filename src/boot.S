@@ -23,6 +23,7 @@ proc_hang:
     
 el1_entry:
 // why do we need do this? coze of manual?
+// ok now i know why. Free inside configure_el3
 //    adr x0, bss_begin
 //    adr x1, bss_end
 //    bl zero_range 
