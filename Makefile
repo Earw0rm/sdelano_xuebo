@@ -17,7 +17,7 @@ SRC_DIR=src
 all: kernel8.img
 
 debug: kernel8.elf
-	gdb-multiarch build/kernel8.elf -ex "target extended-remote localhost:3333" -ex "load"
+	gdb-multiarch build/kernel8.elf -ex "target extended-remote localhost:3333"
 
 ocd:
 	openocd -f adafruit-ft232h.cfg -f rpi4.cfg
@@ -44,6 +44,7 @@ DEP_FILES = $(OBJ_FILES:%.o=%.d)
 
 kernel8.elf: $(SRC_DIR)/linker.ld $(OBJ_FILES)
 	$(ARMGNU)-ld -T $(SRC_DIR)/linker.ld -o $(BUILD_DIR)/kernel8.elf $(OBJ_FILES)
+	$(ARMGNU)-objdump -D $(BUILD_DIR)/kernel8.elf > $(BUILD_DIR)/__kernel8.debug.txt
 
 kernel8.img: kernel8.elf
 	$(ARMGNU)-objcopy $(BUILD_DIR)/kernel8.elf -O binary kernel8.img 

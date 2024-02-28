@@ -3,7 +3,7 @@
 
 
 
-#define VAKERN_BASE (0x1fffffff << 35)
+#define VAKERN_BASE ((uint64_t) 0xfffffff << 35)
 
 
 // part of TCR_EL1
@@ -64,7 +64,7 @@ typedef enum {
 #ifndef __ASSEMBLER__
 #include "common.h"
 
-extern char kpgtbl[4096 * 3 * 4];
+extern char kpgtbl[];
 
 pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc);
 uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind);

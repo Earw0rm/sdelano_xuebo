@@ -44,8 +44,9 @@ void show_invalid_entry_message(uint32_t ex_type, uint32_t esr_el1, uint32_t elr
     printf("An exception occurred without a proper handler. \r\n Reason: %s, esr_el1: %u, elr_el1: %u. \r\n", err_msg, esr_el1, elr_el1);
 }
 
-void el3_panic_msg(uint64_t, uint64_t){
+void el3_panic_msg(uint64_t esr, uint64_t elr){
     muart_send_string("El3_panic \r\n");
+    printf("[EL3] panic. esr %x, elr %x", esr, elr);
 }
 
 // In GICv2, when using a software model with the GICC_CTLR.AckCtl bit set to 0, separate registers

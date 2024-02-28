@@ -52,7 +52,7 @@ uint64_t init_pa_alloc(void){
         page->next = freepages;
         freepages = page;
         ++alloc_pages_counter;
-        if(alloc_pages_counter % 100000 == 0) printf("Init address of pa1 = %x \r\n", sdram_range_1);
+//        if(alloc_pages_counter % 100000 == 0) printf("Init address of pa1 = %x \r\n", sdram_range_1);
     }
 
     for(;sdram_range_2 < sdram_range_2_end; sdram_range_2 += PAGE_SIZE){
@@ -60,16 +60,16 @@ uint64_t init_pa_alloc(void){
         page->next = freepages;
         freepages = page;
         ++alloc_pages_counter;
-        if(alloc_pages_counter % 100000 == 0) printf("Init address of pa2 = %x \r\n", sdram_range_2);
+//        if(alloc_pages_counter % 100000 == 0) printf("Init address of pa2 = %x \r\n", sdram_range_2);
     }
     for(;sdram_range_3 < sdram_range_3_end; sdram_range_3 += PAGE_SIZE){
         struct run * page = (struct run *) sdram_range_3;
         page->next = freepages;
         freepages = page;
         ++alloc_pages_counter;
-        if(alloc_pages_counter % 100000 == 0) printf("Init address of pa3 = %x \r\n", sdram_range_3);
+//        if(alloc_pages_counter % 100000 == 0) printf("Init address of pa3 = %x \r\n", sdram_range_3);
     }
-    printf("Ret \r\n");
+//    printf("Ret \r\n");
     return alloc_pages_counter;
 }
 

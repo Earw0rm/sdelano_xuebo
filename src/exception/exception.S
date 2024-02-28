@@ -213,5 +213,5 @@ el3_vec:
 el3_panic:
     mrs x0, esr_el3
     mrs x1, elr_el3	
-	bl show_invalid_entry_message
+	bl el3_panic_msg
 	b err_hang

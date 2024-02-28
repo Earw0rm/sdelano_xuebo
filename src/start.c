@@ -12,11 +12,13 @@ __attribute__((aligned(16))) char init_stack3[4096 * 4];
 extern char vectors[]; // exception.S
 extern char el3_vec[]; // exception.S
 extern void kernel_main(void);
-
+extern void putc(void* p, char c);
 
 
 
 void configure_el3(void){
+
+
     muart_init();
 
     w_vbar_el3((uint64_t) &el3_vec);
@@ -65,6 +67,8 @@ void configure_el3(void){
     init_task_initialization(itstack0, itstack1);
 
     pagetable_t pgtbl = init_mmu();
+
+    
     if(pgtbl == 0){
         printf("[EL3]: PANIC! MMU initialization fail.");
         return;

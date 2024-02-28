@@ -3,7 +3,7 @@
 #include "arm/arm_util.h"
 
 
-__attribute__((aligned(16))) char kgptbl[4096 * 4];
+__attribute__((aligned(16))) char kpgtbl[4096 * 4];
 
 // Return the address of the PTE in page table pagetable
 // that corresponds to virtual address va.  If alloc!=0,

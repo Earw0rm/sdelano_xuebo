@@ -2,10 +2,10 @@
 #https://sourceware.org/binutils/docs/ld/Scripts.html#Scripts
 ######################
 
+ENTRY(_start)
 
 SECTIONS
 {
-###    . = 0x100000000;
     _boot_start_addr = .;
     .text.boot : {
     
