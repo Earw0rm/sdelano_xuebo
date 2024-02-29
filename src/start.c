@@ -7,24 +7,27 @@
 #include "arm/sysregs.h"
 #include "sched.h"
 
-__attribute__((aligned(16))) char init_stack3[4096 * 4] = {0};
+__attribute__((aligned(16))) volatile char init_stack3[4096 * 4] = {0};
 
 extern char vectors[]; // exception.S
 extern char el3_vec[]; // exception.S
 extern void kernel_main(void);
 extern void putc(void* p, char c);
 
-extern uint64_t  * __bss_begin;
-extern uint64_t  * __bss_end;
+extern volatile const char  _bss_begin;
+extern volatile const char  _bss_end;
 
 void configure_el3(void){
+    // zero bss
+    // IMPORTANT DO NOT CHANGE ORDER OF THIS 3 INSTRUCTION SET
+    uint64_t * start_range = (uint64_t *)&_bss_begin;
+    uint64_t * end_range = (uint64_t *)&_bss_end;
+    bool bss_clear_res = zero_range(start_range, end_range);
 
     muart_init();
-
     w_vbar_el3((uint64_t) &el3_vec);
     init_printf(0, putc);
-    
-    if(!zero_range(__bss_begin, __bss_end)){
+    if(!bss_clear_res){
         printf("[EL3]: Cannot free bss region. Return. \r \n");
         return;        
     }

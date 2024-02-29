@@ -22,8 +22,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "printf.h"
 
 typedef void (*putcf) (void*,char);
-static putcf stdout_putf;
-static void* stdout_putp;
+static putcf stdout_putf; // this is our putc function
+static void* stdout_putp; // todo whats is that?
 
 
 #ifdef PRINTF_LONG_SUPPORT
@@ -123,16 +123,23 @@ static void putchw(void* putp,putcf putf,int n, char z, char* bf)
         putf(putp,ch);
     }
 
+
+
 void tfp_format(void* putp,putcf putf,char *fmt, va_list va)
     {
     char bf[12];
 
     char ch;
 
+//tfp_format(stdout_putp,stdout_putf,fmt,va);
 
     while ((ch=*(fmt++))) {
         if (ch!='%')
-            putf(putp,ch);
+            putf(putp,ch); 
+// putc(0, ch(any character))
+// void putc(void* p, char c){
+//     muart_send(c);
+// }
         else {
             char lz=0;
 #ifdef  PRINTF_LONG_SUPPORT
@@ -212,6 +219,7 @@ void tfp_printf(char *fmt, ...)
     {
     va_list va;
     va_start(va,fmt);
+    //tfp_format(void* putp,putcf putf,char *fmt, va_list va)
     tfp_format(stdout_putp,stdout_putf,fmt,va);
     va_end(va);
     }
