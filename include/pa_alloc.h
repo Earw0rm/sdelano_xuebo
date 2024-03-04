@@ -39,7 +39,7 @@ struct run{
 extern struct run * freepages;
 
 
-bool zero_range(uint64_t * astart, uint64_t * astop);
+bool zero_range(uint64_t * astart, uint64_t size);
 uint64_t init_pa_alloc(void);
 uint64_t get_num_of_free_pages(void);
 

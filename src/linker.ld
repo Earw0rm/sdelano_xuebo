@@ -20,6 +20,7 @@ SECTIONS
          *(.rodata)
     }
 
+
     .data : { 
         *(.data) 
     }

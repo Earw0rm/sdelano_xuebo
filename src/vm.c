@@ -21,7 +21,8 @@ pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc){
         }else{
             if(!alloc) return 0;
             uint64_t page = get_page();
-            zero_range((uint64_t *) page, (uint64_t *) PAGE_UP(page));
+            zero_range((uint64_t *) page, PAGE_SIZE);
+            
             *pte = (PA2PTE(page) | TABLE_DESCRIPTOR | VALID_DESCRIPTOR);
         }
 
@@ -42,6 +43,7 @@ uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind){
 
 pagetable_t init_mmu(void){
     pagetable_t pgtbl = (pagetable_t) &kpgtbl[get_processor_id() * 4096];
+    
     for(char * pointer = 0; pointer < PA_KERNEL_END; ++pointer){
         uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)), (uint64_t) pointer, pgtbl, NORMAL_NC);
         if(res < 0) return 0;

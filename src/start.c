@@ -7,31 +7,22 @@
 #include "arm/sysregs.h"
 #include "sched.h"
 
-__attribute__((aligned(16))) volatile char init_stack3[4096 * 4] = {0};
+__attribute__((aligned(16)))
+volatile char init_stack3[4096 * 4];
 
 extern char vectors[]; // exception.S
 extern char el3_vec[]; // exception.S
 extern void kernel_main(void);
 extern void putc(void* p, char c);
 
-extern volatile const char  _bss_begin;
-extern volatile const char  _bss_end;
 
 void configure_el3(void){
-    // zero bss
-    // IMPORTANT DO NOT CHANGE ORDER OF THIS 3 INSTRUCTION SET
-    uint64_t * start_range = (uint64_t *)&_bss_begin;
-    uint64_t * end_range = (uint64_t *)&_bss_end;
-    bool bss_clear_res = zero_range(start_range, end_range);
+    // all this code correct onli if we clear bss using correct way 
+
 
     muart_init();
     w_vbar_el3((uint64_t) &el3_vec);
     init_printf(0, putc);
-    if(!bss_clear_res){
-        printf("[EL3]: Cannot free bss region. Return. \r \n");
-        return;        
-    }
-
     printf("[EL3]: Configuration start. \r \n");
 
     gic400_init();
@@ -43,12 +34,6 @@ void configure_el3(void){
     w_scr_el3(SCR_VALUE);
     w_spsr_el3(SPSR_VALUE);
 
-
-   
-
-
-
-
     // todo for local test
     uint64_t num_of_init_pages = init_pa_alloc();
     uint64_t pages_after_init = get_num_of_free_pages();
@@ -57,7 +42,6 @@ void configure_el3(void){
     uint64_t itstack0 = get_page();
     uint64_t itstack1 = get_page();
     
-
     if(itstack0 == 0 || itstack1 == 0){
         printf("[EL3]: PANIC! itstack0: %d; itstack1: %d  \r \n", itstack0, itstack1);
         return;

@@ -5,13 +5,13 @@
 // each page it is pointer to LOWER address.
 struct run * freepages = ((struct run*) TERMINAL_PAGE);
 
-// astart must be less then astop
-bool zero_range(uint64_t * astart, uint64_t * astop){
+//size in word.
+bool zero_range(uint64_t * astart, uint64_t size){
 
-    if(astart >= astop) return false;
+    if(size == 0) return false;
 
-    for(uint64_t * ptr = astart; ptr < astop; ++ptr){
-        *ptr = 0;
+    for(;size != 0; --size, ++astart){
+        *(astart) = 0;
     }
 
     return true;
