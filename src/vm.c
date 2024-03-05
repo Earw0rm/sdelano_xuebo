@@ -22,8 +22,9 @@ pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc){
             if(!alloc) return 0;
             uint64_t page = get_page();
             zero_range((uint64_t *) page, PAGE_SIZE);
-            
+
             *pte = (PA2PTE(page) | TABLE_DESCRIPTOR | VALID_DESCRIPTOR);
+            pagetable = (pagetable_t)PTE2PA(pte);
         }
 
     }

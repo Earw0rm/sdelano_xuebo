@@ -2,7 +2,33 @@
 #define _VM_H
 
 
+// Only Block descriptor and Page descriptor has attributes
+// Entry of PGD, PUD, PMD which point to a page table
+// ***** Table descriptor f
+// +-----+------------------------------+---------+--+
+// |     | next level table's phys addr | ignored |11|
+// +-----+------------------------------+---------+--+
+//      47                             12         2  0
 
+// Entry of PUD, PMD which point to a block
+// ***** Block descriptor
+// +-----+------------------------------+---------+--+
+// |     |  block's physical address    |attribute|01|
+// +-----+------------------------------+---------+--+
+//      47                              n         2  0
+
+// Entry of PTE which point to a page
+// ***** Page descriptor
+// +-----+------------------------------+---------+--+
+// |     |  page's physical address     |attribute|11|
+// +-----+------------------------------+---------+--+
+//      47                             12         2  0
+
+// Invalid entry
+// +-----+------------------------------+---------+--+
+// |     |  page's physical address     |attribute|*0|
+// +-----+------------------------------+---------+--+
+//      47                             12         2  0
 #define VAKERN_BASE ((uint64_t) 0xfffffff << 35)
 
 
@@ -52,7 +78,9 @@ typedef enum {
 #define VA_PTBL_IND(va, level) (((va) & ((0x1ff) << (30 - ((level - 1)*9)))) >> ((0x1ff) << (30 - ((level - 1)*9))))
 #define VA_PTBL_OFFSET(va) (va & 0x7ff)
 
-#define PTE2PA(pte) (*pte & (((1ull << 48) - 1) & ((1ull << 12) - 1)))
+//#define PTE2PA(pte) (*pte & (((1ull << 48) - 1) & ((1ull << 12) - 1)))
+
+#define PTE2PA(pte) (((*pte) & ((1ull << 48) - 1)) >> 12)
 #define PA2PTE(addr) (addr << 12)
 
 #define TABLE_DESCRIPTOR 1 << 1

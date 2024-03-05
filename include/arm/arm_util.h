@@ -189,6 +189,9 @@ static inline uint64_t get_processor_id(void){
     return (r_mpidr_el1() & 0xff);
 }
 
+static inline void ceret(void){
+    asm volatile("eret");
+}
 
 #endif 
 #endif

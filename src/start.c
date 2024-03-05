@@ -67,15 +67,16 @@ void configure_el3(void){
         return;
     }
 
-    w_ttbr1_el1((((uint64_t) pgtbl) | VAKERN_BASE));
+    w_ttbr1_el1(((uint64_t) pgtbl) << 12);
 
-    asm volatile("isb");
+    enable_mmu();
 
 
     if(!init_task_is_initialized){
         printf("[EL3]: PANIC! Init task is not initialized. \r\n");
         return;
     }
+
 
 
     printf("[EL3]: Register settings is completed. Read value of system registers and print: \r \n");
@@ -87,7 +88,7 @@ void configure_el3(void){
     printf("[EL3]: elr_el3 value addres: %x. \r \n", r_elr_el3());
     printf("[EL3]: vbar_el1 vector addres: %x. \r \n", r_vbar_el1());
     printf("[EL3]: vbar_el3 vector addr: %X. \r \n", r_vbar_el3());
-
+    printf("[EL3]: ttbr1_el1: %x. \r \n", r_ttbr1_el1());
     printf("[EL3]: sp_el0 addr: %X. \r \n", r_sp_el0());
     printf("[EL3]: sp_el1 addr: %X. \r \n", r_sp_el1());
 
@@ -98,7 +99,10 @@ void configure_el3(void){
 
     printf("[EL3]: Configuration is completed. Jump to kernel main. \r \n");
     
-    asm volatile("eret"); // Jump to kernel_main, el1h 
+    volatile bool wait = true;
+    while (wait);
+
+    asm volatile("eret");// Jump to kernel_main, el1h 
     printf("[EL3] PANIC! Return into start.");
     while (1);
     
