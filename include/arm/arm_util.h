@@ -185,13 +185,29 @@ static inline uint64_t r_mpidr_el1(void){
     return x;
 }
 
+static inline uint64_t r_id_aa64mmfr0_el1(void){
+    uint64_t x;
+    asm volatile("mrs %0, id_aa64mmfr0_el1" : "=r" (x));
+    return x;
+}
+/*
+* ID_AA64MMFR0_EL1.PARange PA memory size PA address size
+* 0b0000 4GB 32 bits,   PA[31:0]
+* 0b0001 64GB 36 bits,  PA[35:0]
+* 0b0010 1TB 40 bits,   PA[39:0]
+* 0b0011 4TB 42 bits,   PA[41:0]
+* 0b0100 16TB 44 bits,  PA[43:0]
+* 0b0101 256TB 48 bits, PA[47:0]
+* 0b0110 4PB 52 bits,   PA[51:0]
+*/
+static inline uint64_t get_parange(void){
+    return (r_id_aa64mmfr0_el1() & 0xf);
+}
+
 static inline uint64_t get_processor_id(void){
     return (r_mpidr_el1() & 0xff);
 }
 
-static inline void ceret(void){
-    asm volatile("eret");
-}
 
 #endif 
 #endif

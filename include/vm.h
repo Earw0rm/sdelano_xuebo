@@ -29,13 +29,46 @@
 // |     |  page's physical address     |attribute|*0|
 // +-----+------------------------------+---------+--+
 //      47                             12         2  0
-#define VAKERN_BASE ((uint64_t) 0xfffffff << 35)
+/*
+
+* [63:50] => page and block upper attrubutes
+* Bits[54] The unprivileged execute-never bit, non-executable page frame for EL0 if set.
+* Bits[53] The privileged execute-never bit, non-executable page frame for EL1 if set.
+* Bits[47:n] The physical address the entry point to. Note that the address should be aligned to 2n Byte.
+* Bits[10] The access flag, a page fault is generated if not set.
+* Bits[7] 0 for read-write, 1 for read-only.
+* Bits[6] 0 for only kernel access, 1 for user/kernel access.
+* Bits[4:2] The index to MAIR.
+* Bits[1:0] Specify the next level is a block/page, page table, or invalid.
+
+* Basic mmu configuration 
+* 1)Disable instruction cache.
+* 2)Disable data cache.
+* 3)The addressable region is 48 bit.
+* 4)The page granule size is 4KB.
+* 5)Not use address space ID (ASID).
+*/
+#define VAKERN_BASE ((uint64_t) 0xffff << 48)
 
 
 // part of TCR_EL1
 // 2^(64 - T*SZ) addresses 
-#define TCR_T0SZ (64 - 35)
-#define TCR_T1SZ ((64 - 35) << 16)
+/*
+* Determining the maximum permitted TnSZ value
+* Translation granule size |  FEAT_TTST not implemented | FEAT_TTST implemented
+* 4KB                           39                          48
+* 16KB                          39                          48
+* 64KB                          39                          47
+*
+* If TCR_ELx.TnSZ configures an IA size that is smaller than the maximum size, then each one-bit reduction in the
+* IA size has one of the following effects on the lookup level that the table walk starts with:
+* 1) The translation table size is reduced by one half.
+* 2) The table walk starts one level later.
+*
+*
+*/
+#define TCR_T0SZ (64 - 48)
+#define TCR_T1SZ ((64 - 48) << 16)
 
 // granule size 4kb for TTBR0
 #define TCR_TG0_4K (0 << 14)
@@ -44,9 +77,19 @@
 
 #define TCR_DS (0 << 59)
 
-#define TCR_IPS (0b001 << 32    )
+/*
+* TCR_IPS:
+* 0b000 4GB 32 bits,   OA[31:0]
+* 0b001 64GB 36 bits,  OA[35:0]
+* 0b010 1TB 40 bits,   OA[39:0]
+* 0b011 4TB 42 bits,   OA[41:0]
+* 0b100 16TB 44 bits,  OA[43:0]
+* 0b101 256TB 48 bits, OA[47:0]
+* 0b110 4PB 52 bits,   OA[51:0]
+*/
+#define TCR_IPS (0b101 << 32)
 
-#define TCR_VALUE (TCR_T0SZ | TCR_T1SZ | TCR_TG0_4K | TCR_TG1_4K | TCR_DS | TCR_IPS)
+#define TCR_VALUE (TCR_T0SZ | TCR_T1SZ | TCR_TG0_4K | TCR_TG1_4K | TCR_DS)
 
 /* part of MAIR_EL1
  * Memory region attributes:
@@ -72,17 +115,22 @@ typedef enum {
 
 
 
+//                            Virtual address                                                              
+// +-----------------------------------------------------------------------+                                
+// |         | PGD Index | PUD Index | PMD Index | PTE Index | Page offset |                              
+// +-----------------------------------------------------------------------+ 
+// 63     48|47       39|38       30|29       21|20       12|11            0
 
 
-// #define VA_PTBL_IND(va, level) (((va) & (0x1ff << (47 - level*9))) >> (47 - level*9))
-#define VA_PTBL_IND(va, level) (((va) & ((0x1ff) << (30 - ((level - 1)*9)))) >> ((0x1ff) << (30 - ((level - 1)*9))))
+
+#define VA_PTBL_IND(va, level) (((va) & ((0x1ff) << (39 - level*9))) >> (39 - level*9))
 #define VA_PTBL_OFFSET(va) (va & 0x7ff)
 
-//#define PTE2PA(pte) (*pte & (((1ull << 48) - 1) & ((1ull << 12) - 1)))
+
 
 #define PTE2PA(pte) (((*pte) & ((1ull << 48) - 1)) >> 12)
 #define PA2PTE(addr) (addr << 12)
-
+#define PGROUNDDOWN(addr) ((addr) & ~(4096 - 1))
 #define TABLE_DESCRIPTOR 1 << 1
 #define BLOCK_DESCRIPTOR 0 << 1
 #define PAGE_DESCRIPTOR  1 << 1

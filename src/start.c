@@ -23,7 +23,10 @@ void configure_el3(void){
     muart_init();
     w_vbar_el3((uint64_t) &el3_vec);
     init_printf(0, putc);
+    
     printf("[EL3]: Configuration start. \r \n");
+    uint64_t parange = get_parange();
+    printf("[EL3]: PARange implementeed: %x \r \n", parange);
 
     gic400_init();
     sys_timer_init();
@@ -67,7 +70,7 @@ void configure_el3(void){
         return;
     }
 
-    w_ttbr1_el1(((uint64_t) pgtbl) << 12);
+    w_ttbr1_el1(((uint64_t) pgtbl));
 
     enable_mmu();
 

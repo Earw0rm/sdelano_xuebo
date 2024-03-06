@@ -37,5 +37,6 @@ SECTIONS
     
     _bss_end = .;
     . += 0x1000;
+    . = ALIGN(4096);
     _end_of_kernel_addr = .;
 }
