@@ -137,6 +137,17 @@ static inline void enable_mmu(void) {
         : "x0", "memory"
     );
 }
+static inline void disable_mmu(void) {
+    asm volatile(
+        "mrs x0, sctlr_el1\n"
+        "orr x0, x0, #(0 << 0)\n"
+        "msr sctlr_el1, x0\n"
+        "isb\n"
+        :
+        :
+        : "x0", "memory"
+    );
+}
 
 // MMU part 
 static inline void w_tcr_el1(uint64_t x){

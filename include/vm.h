@@ -67,13 +67,13 @@
 *
 *
 */
-#define TCR_T0SZ (64 - 48)
+#define TCR_T0SZ ((64 - 48) << 0)
 #define TCR_T1SZ ((64 - 48) << 16)
 
 // granule size 4kb for TTBR0
-#define TCR_TG0_4K (0 << 14)
+#define TCR_TG0_4K (0b00 << 14)
 // granule size 4kb for TTBR1
-#define TCR_TG1_4K (2 << 30)
+#define TCR_TG1_4K (0b10 << 30)
 
 #define TCR_DS (0 << 59)
 
@@ -89,7 +89,7 @@
 */
 #define TCR_IPS (0b101 << 32)
 
-#define TCR_VALUE (TCR_T0SZ | TCR_T1SZ | TCR_TG0_4K | TCR_TG1_4K | TCR_DS)
+#define TCR_VALUE (TCR_T0SZ | TCR_T1SZ | TCR_TG0_4K | TCR_TG1_4K )
 
 /* part of MAIR_EL1
  * Memory region attributes:
@@ -111,7 +111,7 @@ typedef enum {
 #define MT_DEVICE_nGnRnE_FLAGS		        (0x00)
 #define MT_NORMAL_NON_CACHABLE_FLAGS  		(0x44)
 
-#define MAIR_VALUE  (MT_DEVICE_nGnRnE_FLAGS << (8 * MT_DEVICE_nGnRnE)) | (MT_NORMAL_NC_FLAGS << (8 * MT_NORMAL_NC))
+#define MAIR_VALUE  (MT_DEVICE_nGnRnE_FLAGS << (8 * MT_DEVICE_nGnRnE)) | (MT_NORMAL_NON_CACHABLE_FLAGS << (8 * MT_NORMAL_NON_CACHABLE))
 
 
 
@@ -123,8 +123,8 @@ typedef enum {
 
 
 
-#define VA_PTBL_IND(va, level) (((va) & ((0x1ff) << (39 - level*9))) >> (39 - level*9))
-#define VA_PTBL_OFFSET(va) (va & 0x7ff)
+#define VA_PTBL_IND(va, level) (((va) & ((0x1ffull) << (39 - level*9))) >> (39 - level*9))
+#define VA_PTBL_OFFSET(va) (va & 0xfff)
 
 
 

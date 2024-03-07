@@ -37,6 +37,9 @@ void configure_el3(void){
     w_scr_el3(SCR_VALUE);
     w_spsr_el3(SPSR_VALUE);
 
+    w_tcr_el1(TCR_VALUE);
+    w_mair_el1(MAIR_VALUE);
+
     // todo for local test
     uint64_t num_of_init_pages = init_pa_alloc();
     uint64_t pages_after_init = get_num_of_free_pages();
@@ -51,11 +54,11 @@ void configure_el3(void){
     }
 
 
-    itstack0 = PAGE_UP(itstack0) | VAKERN_BASE;
-    itstack1 = PAGE_UP(itstack1) | VAKERN_BASE;
+    itstack0 = PAGE_UP(itstack0); //  | VAKERN_BASE
+    itstack1 = PAGE_UP(itstack1); //  | VAKERN_BASE
 
-    w_elr_el3((uint64_t)  (((uint64_t) &kernel_main) | VAKERN_BASE)); 
-    w_vbar_el1((uint64_t) (((uint64_t) &vectors) | VAKERN_BASE));
+    w_elr_el3((uint64_t)  (((uint64_t) &kernel_main) )); // | VAKERN_BASE 
+    w_vbar_el1((uint64_t) (((uint64_t) &vectors) )); //| VAKERN_BASE
 
     w_sp_el0(itstack0);
     w_sp_el1(itstack1);
@@ -71,8 +74,9 @@ void configure_el3(void){
     }
 
     w_ttbr1_el1(((uint64_t) pgtbl));
+    w_ttbr0_el1(((uint64_t) pgtbl));
 
-    enable_mmu();
+ //   enable_mmu();
 
 
     if(!init_task_is_initialized){
@@ -91,7 +95,11 @@ void configure_el3(void){
     printf("[EL3]: elr_el3 value addres: %x. \r \n", r_elr_el3());
     printf("[EL3]: vbar_el1 vector addres: %x. \r \n", r_vbar_el1());
     printf("[EL3]: vbar_el3 vector addr: %X. \r \n", r_vbar_el3());
+
     printf("[EL3]: ttbr1_el1: %x. \r \n", r_ttbr1_el1());
+    printf("[EL3]: mair_el1: %x. \r \n", r_mair_el1());
+    printf("[EL3]: tcr_el1: %x. \r \n", r_tcr_el1());
+
     printf("[EL3]: sp_el0 addr: %X. \r \n", r_sp_el0());
     printf("[EL3]: sp_el1 addr: %X. \r \n", r_sp_el1());
 
