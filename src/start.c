@@ -124,8 +124,8 @@ void configure_el3(void){
     while (wait);
 
     // enable_mmu();
-
-
+    // w_pan(0);
+    asm volatile("isb");
 
     asm volatile("eret");// Jump to kernel_main, el1h 
     printf("[EL3] PANIC! Return into start.");

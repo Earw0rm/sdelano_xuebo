@@ -197,7 +197,7 @@ typedef enum {
  * 11      | Read-only                          | Read-only
  * 
 */
-#define ACCESS_PERMISSION		(0x11 << 6) 
+#define ACCESS_PERMISSION		(0x00 << 6) 
 
 
 #ifndef __ASSEMBLER__

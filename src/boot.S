@@ -8,6 +8,7 @@ _start:
     and x0, x0, #0xFF // check processor id
     cbnz x0, _proc_hang
 
+
     add x1, x0, #1
     lsl x1, x1, #12
 
@@ -37,7 +38,7 @@ el1_entry:
 //    adr x0, bss_begin
 //    adr x1, bss_end
 //    bl zero_range 
-
+   
     ldr x2, =vectors
     msr vbar_el1, x2
     bl kernel_main

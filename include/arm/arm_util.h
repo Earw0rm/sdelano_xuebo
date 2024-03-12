@@ -230,22 +230,6 @@ static inline uint64_t get_processor_id(void){
 */
 
 
-// static inline void enable_mmu(void) {
-//     asm volatile(
-//         "mrs x0, sctlr_el1\n"
-//         "orr x0, x0, #(1 << 0)\n"
-//         "msr sctlr_el1, x0\n"
-//         "isb\n"
-//         :
-//         :
-//         : "x0", "memory"
-//     );
-// }
-
-
-// static inline void w_ttbr0_el1(uint64_t x){
-//     asm volatile("msr ttbr0_el1, %0" : : "r" (x));
-// }
 
 static inline uint64_t r_at_el1(uint64_t x) {
     uint64_t par_value;
@@ -279,7 +263,25 @@ static inline uint64_t r_far_el1(void){
     return x;
 }
 
+static inline uint64_t r_pan(void){
+    uint64_t x;
+    asm volatile("mrs %0, PAN" : "=r" (x));
+    return x;
+}
 
+static inline uint64_t r_uao(void){
+    uint64_t x;
+    asm volatile("mrs %0, UAO" : "=r" (x));
+    return x;
+}
+
+static inline void w_pan(uint64_t x){
+    asm volatile("msr PAN, %0" : : "r" (x));
+}
+
+static inline void w_uao(uint64_t x){
+    asm volatile("msr UAO, %0" : : "r" (x));
+}
 
 #endif 
 #endif
