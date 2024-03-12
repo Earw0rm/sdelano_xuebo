@@ -84,9 +84,9 @@
 #define TCR_T1SZ ((64 - 48) << 16)
 
 // granule size 4kb for TTBR0
-#define TCR_TG0_4K (0b00 << 14)
+#define TCR_TG0_4K (0 << 14)
 // granule size 4kb for TTBR1
-#define TCR_TG1_4K (0b10 << 30)
+#define TCR_TG1_4K (2 << 30)
 
 /**
  *  TCR_EL1.DS[59] 
@@ -127,7 +127,7 @@
 */
 #define TCR_IPS (0x5ull << 32)
 
-#define TCR_VALUE (TCR_T0SZ | TCR_T1SZ | TCR_TG0_4K | TCR_TG1_4K | TCR_DS | TCR_IPS)
+#define TCR_VALUE (TCR_T0SZ | TCR_T1SZ | TCR_TG0_4K | TCR_TG1_4K )
 
 /* part of MAIR_EL1
  * Memory region attributes:
@@ -160,6 +160,13 @@ typedef enum {
 // 63     48|47       39|38       30|29       21|20       12|11            0
 
 
+//                            Virtual address                                                              
+// +-----------------------------------------------------------------------+                                
+// |         | PGD Index | PUD Index | PMD Index | PTE Index | Page offset |                              
+// +-----------------------------------------------------------------------+ 
+// 63     48|-> 47       39|38       30|29       21|20       12|11            0
+
+
 
 #define VA_PTBL_IND(va, level) (((va) & ((0x1ffull) << (39 - level*9))) >> (39 - level*9))
 #define VA_PTBL_OFFSET(va) (va & 0xfff)
@@ -177,9 +184,10 @@ typedef enum {
 #define VALID_DESCRIPTOR        1
 
 
+
 //Software management of the Access flag 5876
 //If flag does not set, then generate sync exception 
-#define ACCESS_FLAG             1 << 10
+#define ACCESS_FLAG             0x1 << 10
 
 /**
  * AP[2:1] | Access from higher Exception level | Access from EL0
@@ -189,7 +197,7 @@ typedef enum {
  * 11      | Read-only                          | Read-only
  * 
 */
-#define ACCESS_PERMISSION		(0x01 << 6) 
+#define ACCESS_PERMISSION		(0x11 << 6) 
 
 
 #ifndef __ASSEMBLER__

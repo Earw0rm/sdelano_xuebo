@@ -33,7 +33,7 @@ pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc){
         pte_t *pte = &pagetable[pgtbl_index];
 
         if(((*pte) & VALID_DESCRIPTOR) == 1){ // mean that PTE is valid
-            pagetable = (pagetable_t)DAADDR((uint64_t)pte);
+            pagetable = (pagetable_t)DAADDR((uint64_t)*pte);
 
         }else{
             if(!alloc) return 0;
@@ -48,6 +48,7 @@ pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc){
         }
 
     }
+    // pte_t *pte_res = &pagetable[VA_PTBL_IND(va, 3)];
 
     return &pagetable[VA_PTBL_IND(va, 3)]; // last 3nd level without offset
 }
@@ -64,9 +65,12 @@ uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind){
     if(pte == 0){
         return -1;
     }
+    
+
     // CHECK PAGE LOWER ATTRIBUTES AND UPPER ATTRIBUTES
     uint64_t page_str = (pa | VALID_DESCRIPTOR | PAGE_DESCRIPTOR | (ind << 2) | ACCESS_FLAG | ACCESS_PERMISSION);
-    *pte = page_str;
+
+    (*pte) = page_str;
     return 0;
 }
 

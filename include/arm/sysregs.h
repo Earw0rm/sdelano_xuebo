@@ -36,7 +36,7 @@
 // gic400 or another stuff. 
 #define SCR_NS		 (1 << 0) 
 #define SCR_S        (0 << 0)
-#define SCR_VALUE	 ( SCR_RESERVED | SCR_RW | SCR_S)
+#define SCR_VALUE	 ( SCR_RESERVED | SCR_RW | SCR_NS)
 
 // ***************************************
 // SPSR_EL3, Saved Program Status Register (EL3) Page 819 of AArch64-Reference-Manual (A-profile architecture reference manual).

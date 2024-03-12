@@ -11,6 +11,7 @@
 #define PAGE_UP(x) ((((uint64_t)(x)) & (~0xfff)) + (0x1000))
 #define TOP_OF_THE_PAGE(x) ((((uint64_t)x) & (~0xfff)) + (0x1000 - 0x0010))
 
+#define TOP_OF_THE_STACK(x) ((((uint64_t)x) & (~0xfff)) + (0x1000 - 0x0010))
 
 // #define TOP_OF_THE_PAGE(x) ((((uint64_t)x) & (~0xfff)) + (0x1000 - 0x0004))
 // legacy master view of physical memory

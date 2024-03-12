@@ -58,17 +58,16 @@ void configure_el3(void){
     }
 
     
-
-    itstack0 = PAGE_UP(itstack0); //  | VAKERN_BASE
-    itstack1 = PAGE_UP(itstack1); //  | VAKERN_BASE
+    uint64_t up_of_stack0 = TOP_OF_THE_STACK(itstack0);  //  | VAKERN_BASE
+    uint64_t up_of_stack1 = TOP_OF_THE_STACK(itstack1); //  | VAKERN_BASE
 ;
     w_elr_el3((uint64_t)  (((uint64_t) &kernel_main) )); // | VAKERN_BASE 
     w_vbar_el1((uint64_t) (((uint64_t) &vectors) )); //| VAKERN_BASE
 
-    w_sp_el0(itstack0);
-    w_sp_el1(itstack1);
+    w_sp_el0(up_of_stack0);
+    w_sp_el1(up_of_stack1);
 
-    init_task_initialization(itstack0, itstack1);
+    init_task_initialization(up_of_stack0, up_of_stack1);
 
     pagetable_t pgtbl = init_mmu();
 
@@ -77,14 +76,12 @@ void configure_el3(void){
         printf("[EL3]: PANIC! MMU initialization fail.");
         return;
     }
+    uint64_t stack0_map_res = mapva(up_of_stack0, up_of_stack0, pgtbl, NORMAL_NC);
+    uint64_t stack1_map_res = mapva(up_of_stack1, up_of_stack1, pgtbl, NORMAL_NC);
 
-    uint64_t pgtbl_daddr = (DAADDR((uint64_t)pgtbl));
-    w_ttbr1_el1(pgtbl_daddr);
-    w_ttbr0_el1(pgtbl_daddr);
+    w_ttbr1_el1((uint64_t)pgtbl);
+    w_ttbr0_el1((uint64_t)pgtbl);
 
-    uint64_t stack0_map_res = mapva(itstack0, itstack0, pgtbl, NORMAL_NC);
-    uint64_t stack1_map_res = mapva(itstack1, itstack1, pgtbl, NORMAL_NC);
- //   enable_mmu();
     if(stack0_map_res < 0 || stack1_map_res < 0){
         printf("[EL3]: PANIC! Stack0 or stack1 mapping failt.");
         return;
@@ -125,7 +122,11 @@ void configure_el3(void){
     
     volatile bool wait = true;
     while (wait);
-    enable_mmu();
+
+    // enable_mmu();
+
+
+
     asm volatile("eret");// Jump to kernel_main, el1h 
     printf("[EL3] PANIC! Return into start.");
     while (1);
