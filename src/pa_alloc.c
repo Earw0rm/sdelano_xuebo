@@ -52,7 +52,6 @@ uint64_t init_pa_alloc(void){
         page->next = freepages;
         freepages = page;
         ++alloc_pages_counter;
-//        if(alloc_pages_counter % 100000 == 0) printf("Init address of pa1 = %x \r\n", sdram_range_1);
     }
 
     for(;sdram_range_2 < sdram_range_2_end; sdram_range_2 += PAGE_SIZE){
@@ -60,27 +59,27 @@ uint64_t init_pa_alloc(void){
         page->next = freepages;
         freepages = page;
         ++alloc_pages_counter;
-//        if(alloc_pages_counter % 100000 == 0) printf("Init address of pa2 = %x \r\n", sdram_range_2);
     }
     for(;sdram_range_3 < sdram_range_3_end; sdram_range_3 += PAGE_SIZE){
         struct run * page = (struct run *) sdram_range_3;
         page->next = freepages;
         freepages = page;
         ++alloc_pages_counter;
-//        if(alloc_pages_counter % 100000 == 0) printf("Init address of pa3 = %x \r\n", sdram_range_3);
     }
-//    printf("Ret \r\n");
     return alloc_pages_counter;
 }
 
 uint64_t get_num_of_free_pages(void){
     struct run * terminal_page = ((struct run*) TERMINAL_PAGE); 
     uint64_t counter = 0;
-    for(struct run * cpage = freepages;
-        cpage != terminal_page; 
-        cpage = cpage->next){
+    for(struct run * cpage = freepages; cpage != terminal_page; cpage = cpage->next){
             ++counter;
+
+            if((((uint64_t)(&cpage)) & 0xfffull) != 0){
+                return counter; // mean that some page are not 4kb aligment
+            }
         }
+     
     return counter;
 }
 

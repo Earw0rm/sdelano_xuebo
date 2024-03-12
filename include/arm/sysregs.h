@@ -21,7 +21,8 @@
 // ***************************************
 
 #define HCR_RW    (1 << 31)
-#define HCR_VALUE HCR_RW
+#define HCR_VM    (0 << 0)   // Virtualization enabled 
+#define HCR_VALUE (HCR_RW | HCR_VM)
 
 // ***************************************
 // SCR_EL3, Secure Configuration Register (EL3), Page 6947 of AArch64-Reference-Manual (A-profile architecture reference manual).    

@@ -68,8 +68,8 @@
 	eret
 .endm
 
-.macro handle_invalid_entry el, type 
-    kernel_entry \el
+.macro handle_invalid_entry type 
+    kernel_entry 
     mov x0, #\type
     mrs x1, esr_el1
     mrs x2, elr_el1
@@ -106,49 +106,49 @@ vectors:
 
 
 sync_invalid_el1t:
-	handle_invalid_entry, SYNC_INVALID_EL1t
+	handle_invalid_entry SYNC_INVALID_EL1t
 
 irq_invalid_el1t:
-	handle_invalid_entry, IRQ_INVALID_EL1t
+	handle_invalid_entry IRQ_INVALID_EL1t
 
 fiq_invalid_el1t:
-	handle_invalid_entry, FIQ_INVALID_EL1t
+	handle_invalid_entry FIQ_INVALID_EL1t
 
 error_invalid_el1t:
-	handle_invalid_entry, ERROR_INVALID_EL1t
+	handle_invalid_entry ERROR_INVALID_EL1t
 
 sync_invalid_el1h:
-	handle_invalid_entry, SYNC_INVALID_EL1h
+	handle_invalid_entry SYNC_INVALID_EL1h
 
 fiq_invalid_el1h:
-	handle_invalid_entry, FIQ_INVALID_EL1h
+	handle_invalid_entry FIQ_INVALID_EL1h
 
 error_invalid_el1h:
-	handle_invalid_entry, ERROR_INVALID_EL1h
+	handle_invalid_entry ERROR_INVALID_EL1h
 
 sync_invalid_el0_64:
-	handle_invalid_entry, SYNC_INVALID_EL0_64
+	handle_invalid_entry SYNC_INVALID_EL0_64
 
 irq_invalid_el0_64:
-	handle_invalid_entry, IRQ_INVALID_EL0_64
+	handle_invalid_entry IRQ_INVALID_EL0_64
 
 fiq_invalid_el0_64:
-	handle_invalid_entry, FIQ_INVALID_EL0_64
+	handle_invalid_entry FIQ_INVALID_EL0_64
 
 error_invalid_el0_64:
-	handle_invalid_entry, ERROR_INVALID_EL0_64
+	handle_invalid_entry ERROR_INVALID_EL0_64
 
 sync_invalid_el0_32:
-	handle_invalid_entry, SYNC_INVALID_EL0_32
+	handle_invalid_entry SYNC_INVALID_EL0_32
 
 irq_invalid_el0_32:
-	handle_invalid_entry, IRQ_INVALID_EL0_32
+	handle_invalid_entry IRQ_INVALID_EL0_32
 
 fiq_invalid_el0_32:
-	handle_invalid_entry, FIQ_INVALID_EL0_32
+	handle_invalid_entry FIQ_INVALID_EL0_32
 
 error_invalid_el0_32:
-	handle_invalid_entry, ERROR_INVALID_EL0_32
+	handle_invalid_entry ERROR_INVALID_EL0_32
 
 // boolsheet, peredelat'
 el1_irq:
@@ -195,7 +195,7 @@ el3_vec:
 	ventry	el3_panic			// Error EL1t
 
 	ventry	el3_panic			// Synchronous EL1h
-	ventry	el3_panic					    // IRQ EL1h
+	ventry	el3_panic			// IRQ EL1h
 	ventry	el3_panic			// FIQ EL1h
 	ventry	el3_panic			// Error EL1h
 

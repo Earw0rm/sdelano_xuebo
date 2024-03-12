@@ -131,7 +131,7 @@ static inline void enable_mmu(void) {
         "mrs x0, sctlr_el1\n"
         "orr x0, x0, #(1 << 0)\n"
         "msr sctlr_el1, x0\n"
-        "isb\n"
+        "dsb ish\n"
         :
         :
         : "x0", "memory"
@@ -220,5 +220,39 @@ static inline uint64_t get_processor_id(void){
 }
 
 
+/**
+ * //////////////////////
+ * Adress translation instructions
+ * //////////////////////
+ * 
+ * TODO IMPLEMENT 5849 manual 
+ * 6331 synchronization for system register
+*/
+
+
+// static inline void enable_mmu(void) {
+//     asm volatile(
+//         "mrs x0, sctlr_el1\n"
+//         "orr x0, x0, #(1 << 0)\n"
+//         "msr sctlr_el1, x0\n"
+//         "isb\n"
+//         :
+//         :
+//         : "x0", "memory"
+//     );
+// }
+
+static inline void r_at_el1(void){
+
+}
+static inline void r_at_el0(void){
+
+}
+static inline void w_at_el1(void){
+
+}
+static inline void w_at_el0(void){
+
+}
 #endif 
 #endif

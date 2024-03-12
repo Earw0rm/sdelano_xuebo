@@ -5,7 +5,7 @@
 
 
 
-#define PAGE_SIZE 4096 // bytes
+#define PAGE_SIZE 0x1000 // bytes
 
 #define ADDR_ROUND_DOWN(x) (((uint64_t)(x)) & (~0xfff))
 #define PAGE_UP(x) ((((uint64_t)(x)) & (~0xfff)) + (0x1000))
@@ -14,7 +14,7 @@
 
 // #define TOP_OF_THE_PAGE(x) ((((uint64_t)x) & (~0xfff)) + (0x1000 - 0x0004))
 // legacy master view of physical memory
-#define PASTOP        (0x1f9999999) // 8gb rpi 
+#define PASTOP        (0x1f9990000) // 8gb rpi 
 #define SDRAM_BOT     (0x100000000)
 #define SDRAM_TOP     (0xFC000000)
 #define VC_BASE_TOP   (0x40000000)

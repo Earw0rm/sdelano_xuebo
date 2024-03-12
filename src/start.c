@@ -46,17 +46,22 @@ void configure_el3(void){
 
 
     uint64_t itstack0 = get_page();
+    zero_range((uint64_t *) itstack0, PAGE_SIZE);
+
     uint64_t itstack1 = get_page();
-    
+    zero_range((uint64_t *) itstack1, PAGE_SIZE);
+
+
     if(itstack0 == 0 || itstack1 == 0){
         printf("[EL3]: PANIC! itstack0: %d; itstack1: %d  \r \n", itstack0, itstack1);
         return;
     }
 
+    
 
     itstack0 = PAGE_UP(itstack0); //  | VAKERN_BASE
     itstack1 = PAGE_UP(itstack1); //  | VAKERN_BASE
-
+;
     w_elr_el3((uint64_t)  (((uint64_t) &kernel_main) )); // | VAKERN_BASE 
     w_vbar_el1((uint64_t) (((uint64_t) &vectors) )); //| VAKERN_BASE
 
@@ -73,11 +78,17 @@ void configure_el3(void){
         return;
     }
 
-    w_ttbr1_el1(((uint64_t) pgtbl));
-    w_ttbr0_el1(((uint64_t) pgtbl));
+    uint64_t pgtbl_daddr = (DAADDR((uint64_t)pgtbl));
+    w_ttbr1_el1(pgtbl_daddr);
+    w_ttbr0_el1(pgtbl_daddr);
 
+    uint64_t stack0_map_res = mapva(itstack0, itstack0, pgtbl, NORMAL_NC);
+    uint64_t stack1_map_res = mapva(itstack1, itstack1, pgtbl, NORMAL_NC);
  //   enable_mmu();
-
+    if(stack0_map_res < 0 || stack1_map_res < 0){
+        printf("[EL3]: PANIC! Stack0 or stack1 mapping failt.");
+        return;
+    }
 
     if(!init_task_is_initialized){
         printf("[EL3]: PANIC! Init task is not initialized. \r\n");
@@ -97,6 +108,8 @@ void configure_el3(void){
     printf("[EL3]: vbar_el3 vector addr: %X. \r \n", r_vbar_el3());
 
     printf("[EL3]: ttbr1_el1: %x. \r \n", r_ttbr1_el1());
+    printf("[EL3]: ttbr0_el1: %x. \r \n", r_ttbr0_el1());
+
     printf("[EL3]: mair_el1: %x. \r \n", r_mair_el1());
     printf("[EL3]: tcr_el1: %x. \r \n", r_tcr_el1());
 
@@ -106,13 +119,13 @@ void configure_el3(void){
 
     // some local boolsheet tests
     printf("[EL3]: Num of init free pages : %d. \r \n", num_of_init_pages);
-    printf("[EL3]: Num of free pages after get : %d. \r \n", pages_after_init);
+    // printf("[EL3]: Num of free pages after get : %d. \r \n", pages_after_init);
 
     printf("[EL3]: Configuration is completed. Jump to kernel main. \r \n");
     
     volatile bool wait = true;
     while (wait);
-
+    enable_mmu();
     asm volatile("eret");// Jump to kernel_main, el1h 
     printf("[EL3] PANIC! Return into start.");
     while (1);
