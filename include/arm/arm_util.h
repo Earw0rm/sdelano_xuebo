@@ -263,25 +263,25 @@ static inline uint64_t r_far_el1(void){
     return x;
 }
 
-static inline uint64_t r_pan(void){
-    uint64_t x;
-    asm volatile("mrs %0, PAN" : "=r" (x));
-    return x;
-}
+// static inline uint64_t r_pan(void){
+//     uint64_t x;
+//     asm volatile("mrs %0, PAN" : "=r" (x));
+//     return x;
+// }
 
-static inline uint64_t r_uao(void){
-    uint64_t x;
-    asm volatile("mrs %0, UAO" : "=r" (x));
-    return x;
-}
+// static inline uint64_t r_uao(void){
+//     uint64_t x;
+//     asm volatile("mrs %0, UAO" : "=r" (x));
+//     return x;
+// }
 
-static inline void w_pan(uint64_t x){
-    asm volatile("msr PAN, %0" : : "r" (x));
-}
+// static inline void w_pan(uint64_t x){
+//     asm volatile("msr PAN, %0" : : "r" (x));
+// }
 
-static inline void w_uao(uint64_t x){
-    asm volatile("msr UAO, %0" : : "r" (x));
-}
+// static inline void w_uao(uint64_t x){
+//     asm volatile("msr UAO, %0" : : "r" (x));
+// }
 
 #endif 
 #endif

@@ -189,7 +189,19 @@ typedef enum {
 //If flag does not set, then generate sync exception 
 #define ACCESS_FLAG             0x1 << 10
 
+
+// lower attributes of page or block descriptor
+// The shareable attribute is used to define whether a location is shared with multiple cores.
+// Marking a region as Non-shareable means that it is only used by this core, whereas marking it
+// as inner shareable or outer shareable, or both, means that the location is shared with other
+// observers, for example, a GPU or DMA device might be considered another observer. In the
+// same way, the division between inner and outer is IMPLEMENTATION DEFINED.
+#define NON_SHAREABLE   (0b00 << 6)
+#define OUTER_SHAREABLE (0b10 << 6)
+#define INNER_SHAREABLE (0b11 << 6)
 /**
+ * Summary of instruction access and execution permissions for stage 1 translations 5871
+ * 
  * AP[2:1] | Access from higher Exception level | Access from EL0
  * 00      | Read/write                         | None
  * 01      | Read/write                         | Read/write
