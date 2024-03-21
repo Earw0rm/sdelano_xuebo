@@ -13,6 +13,8 @@ uint64_t number_of_runnning_tasks = 1;
 
 bool init_task_is_initialized = false;
 
+
+
 void init_task_initialization(uint64_t stack0, uint64_t stack1){
     init_task.stack0 = stack0;
     init_task.stack1 = stack1;

@@ -7,7 +7,7 @@ BOOTMNT ?=/media/foer/bootfs
 ARMGNU ?=aarch64-linux-gnu
 
 COPS =-Wall -nostdlib -nostartfiles -ffreestanding \
-	-Iinclude -mgeneral-regs-only -g
+	-Iinclude -mgeneral-regs-only -g 
 
 ASMOPS =-Iinclude
 
@@ -44,11 +44,11 @@ DEP_FILES = $(OBJ_FILES:%.o=%.d)
 
 kernel8.elf: $(SRC_DIR)/linker.ld $(OBJ_FILES)
 	$(ARMGNU)-ld -T $(SRC_DIR)/linker.ld -o $(BUILD_DIR)/kernel8.elf $(OBJ_FILES)
-	$(ARMGNU)-objdump -D $(BUILD_DIR)/kernel8.elf > $(BUILD_DIR)/__kernel8.debug.txt
+	$(ARMGNU)-objdump -D -S $(BUILD_DIR)/kernel8.elf > $(BUILD_DIR)/__kernel8.debug.txt
 
 kernel8.img: kernel8.elf
 	$(ARMGNU)-objcopy $(BUILD_DIR)/kernel8.elf -O binary kernel8.img 
-	$(ARMGNU)-objdump -D $(BUILD_DIR)/kernel8.elf > $(BUILD_DIR)/__debug.txt
+	$(ARMGNU)-objdump -D -S $(BUILD_DIR)/kernel8.elf > $(BUILD_DIR)/__debug.txt
 	cp kernel8.img $(BOOTMNT)/
 	cp config.txt $(BOOTMNT)/
 	sync
