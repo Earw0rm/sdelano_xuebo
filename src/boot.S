@@ -33,18 +33,19 @@ _zero_bss:
     add x0, x0, #8
     b _zero_bss
 __break_zero_bss:
-    ldr x5, =_bss_is_clear
+// there is dependency between row 3 and row 2. Barrier does not need
     mov x1, #1
+    ldr x5, =_bss_is_clear
     str x1, [x5]
-    dmb st
+//    dmb st
     b _prepare_id_and_configure
 
 
 
 _wait_for_bss_clear:
+// there is dependency in 1st 3 row. Barrier does not need
     ldr x5, =_bss_is_clear
-    ldr x6, [x5]
-    dmb ld
+    ldr x6, [x5] 
     cbz x6, _wait_for_bss_clear
     b _prepare_id_and_configure
     b _proc_hang // should not be achievable
