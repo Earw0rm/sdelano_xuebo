@@ -8,7 +8,7 @@
 #include "sched.h"
 
 __attribute__((aligned(16)))
-volatile char init_stack3[4096 * 4];
+volatile char init_stack3[4096 * 4]; 
 
 extern char vectors[]; // exception.S
 extern char el3_vec[]; // exception.S
@@ -16,10 +16,17 @@ extern void kernel_main(void);
 extern void putc(void* p, char c);
 
 
-void configure_el3(void){
+void configure_el3(uint64_t core_id){
+
+    if(core_id == 0){
+
+    }else{
+        
+    }
+
+
+
     // all this code correct onli if we clear bss using correct way 
-
-
     muart_init();
     w_vbar_el3((uint64_t) &el3_vec);
     init_printf(0, putc);
