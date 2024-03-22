@@ -196,6 +196,8 @@ static inline uint64_t r_mpidr_el1(void){
     return x;
 }
 
+
+
 static inline uint64_t r_id_aa64mmfr0_el1(void){
     uint64_t x;
     asm volatile("mrs %0, id_aa64mmfr0_el1" : "=r" (x));

@@ -1,10 +1,11 @@
 #include "arm/sysregs.h"
 #include "pa_alloc.h"
 
-.section ".text.boot"
-
+.section ".data"
 _bss_is_clear:
     .quad 0x0
+
+.section ".text.boot"
 
 .globl _start
 _start:

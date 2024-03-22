@@ -17,12 +17,36 @@ extern void putc(void* p, char c);
 
 
 void configure_el3(uint64_t core_id){
+    
+    bool initialization_is_ready = false;
+    bool debug_wait = true;
 
     if(core_id == 0){
+        muart_init();
+        init_printf(0, putc);
+        
+        __atomic_thread_fence(__ATOMIC_SEQ_CST);
+
+        initialization_is_ready = true;
 
     }else{
-        
+        while(true);
+
+        while(!initialization_is_ready){
+            asm volatile("nop");
+        }
     }
+
+    while(debug_wait) {
+        asm volatile("nop");
+    }
+
+    while(true){
+        uint64_t cpuid = get_processor_id();
+        printf("current cpuid = %x \r\n", cpuid);
+    }
+
+
 
 
 

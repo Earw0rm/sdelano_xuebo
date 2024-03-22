@@ -2,6 +2,10 @@
 #include "common.h"
 #include "utils.h"
 #include "gpio.h"
+#include "speenlock.h"
+
+
+static struct speenlock uart_lock = {.cpu_num = -1, .locked = 0, .name = "clear"};
 
 
 
@@ -104,5 +108,7 @@ void muart_send_string(char* str){
 
 
 void putc(void* p, char c){
+    acquire(&uart_lock);
     muart_send(c);
+    release(&uart_lock);
 }
