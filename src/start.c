@@ -21,10 +21,25 @@ void configure_el3(uint64_t core_id){
     bool initialization_is_ready = false;
     bool debug_wait = true;
 
+    w_vbar_el3((uint64_t) &el3_vec);
+
     if(core_id == 0){
+
         muart_init();
-        init_printf(0, putc);
-        
+        init_printf(0, unsafe_putc);
+        printf("[EL3]: Welcome. Obtaining and printing information about the system \r \n");
+
+        uint64_t parange = get_parange();
+        uint32_t gic_type = get_gic400_info();
+
+        printf("[EL3]: PARange implementeed = %x \r \n", parange);
+        printf("[EL3]: ######## GIC400 info: \r\n");
+        printf("[EL3]: is_secure_extn = %x \r\n",  GIC_TYPE_IS_SECURE_EXTN(gic_type));
+        printf("[EL3]: lspi = %x \r\n",            GIC_TYPE_LSPI(gic_type));
+        printf("[EL3]: it_lines_number = %x \r\n", GIC_TYPE_ITLINESNUMBER(gic_type));
+        printf("[EL3]: cpu_number = %x \r\n",      GIC_TYPE_CPU_NUMBER(gic_type));
+        printf("[EL3]: ##################### \r\n");
+
         __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
         initialization_is_ready = true;
@@ -40,24 +55,9 @@ void configure_el3(uint64_t core_id){
     while(debug_wait) {
         asm volatile("nop");
     }
-
-    while(true){
-        uint64_t cpuid = get_processor_id();
-        printf("current cpuid = %x \r\n", cpuid);
-    }
-
-
-
-
-
     // all this code correct onli if we clear bss using correct way 
-    muart_init();
-    w_vbar_el3((uint64_t) &el3_vec);
-    init_printf(0, putc);
-    
-    printf("[EL3]: Configuration start. \r \n");
-    uint64_t parange = get_parange();
-    printf("[EL3]: PARange implementeed: %x \r \n", parange);
+
+
 
     gic400_init();
     sys_timer_init();

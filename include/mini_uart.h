@@ -59,7 +59,11 @@ void muart_send_string(char* str);
 
 
 
-//for printf library
+//for printf library 
+
+void unsafe_putc(void* p, char c);
+
+
 void putc(void* p, char c);
 
 

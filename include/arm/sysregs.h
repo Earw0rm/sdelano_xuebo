@@ -22,7 +22,7 @@
 // ***************************************
 
 #define HCR_RW    (1 << 31)
-#define HCR_VM    (0 << 0)   // Virtualization enabled 
+#define HCR_VM    (0 << 0)   // Virtualization disabled(0) enabled(1) 
 #define HCR_VALUE (HCR_RW | HCR_VM)
 
 // ***************************************

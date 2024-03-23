@@ -21,7 +21,7 @@
 // 0x6000-0x7FFF Virtual CPU interfaces
 //
 // RPI4 Note The GIC-400 is configured with "NUM_CPUS=4" and "NUM_SPIS=192".
-// 216 -> последнтй interrupt id 
+// 216 -> last interrupt id 
 // 0-15 id -> SGI. 16-31 -> PPI. 
 //**
 // gic_architecture_specification 35 page
@@ -38,15 +38,19 @@
 // maximum number of interrupts is 32(N+1). The interrupt ID range is from 0 to (number of IDs – 1). For
 // example:
 // 0b00011 Up to 128 interrupt lines, interrupt IDs 0-127.
-#define TYPE_ITLINESNUMBER_GET(x) ( x & 0xF ) 
-#define TYPE_IS_SECURE_EXTN_GET(x) (x & (1 << 10))
-
-
+#define GIC_TYPE_ITLINESNUMBER(x)  (x & 0x1f) 
+#define GIC_TYPE_IS_SECURE_EXTN(x) ((x & (1 << 10)) >> 10)
+#define GIC_TYPE_CPU_NUMBER(x)     ((x & (0x7 << 5)) >> 5)
+#define GIC_TYPE_LSPI(x)           ((x & (0x1f << 11)) >> 11) // 0b11111 mean 31 LOCABLE spi's
 
 struct GIC400_distributor{
+    // non-secure bit[0] => enable interrupt forwarder
     reg32 ctl;
+     // info about gic configuration
     reg32 type;
+    // Provides information about the implementer and revision of the Distributor
     reg32 iid;
+
     reg32 _res0[29];
 
     // configure interrupt to group 0 (secure) or group 1(non secure)
@@ -140,5 +144,6 @@ void gic400_turn_off_distributor(void);
 int gic400_init(void);
 
 void gic400_enable_sys_timer(uint32_t timer_num);
-uint32_t get_num_of_it_lines_support(void);
+uint32_t get_gic400_info(void);
+
 #endif

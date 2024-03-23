@@ -31,7 +31,7 @@ struct speenlock{
  * __sync_synchronize()
  * turn_off interruptions
 */
-void acquire(bool *);
+void acquire(struct speenlock *);
 /**
  * __sync_synchronize()
  * __sync_lock_release(&value)

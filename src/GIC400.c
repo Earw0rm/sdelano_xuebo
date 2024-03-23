@@ -6,11 +6,10 @@
 // 0x1000-0x1FFF Distributor
 // 0x2000-0x3FFF CPU interfaces
 
-static uint32_t num_of_it_lines_support;
 
-uint32_t get_num_of_it_lines_support(void){
-    uint32_t it_lines_support = num_of_it_lines_support;
-    return it_lines_support;
+
+uint32_t get_gic400_info(void){
+    return GIC400_DISTRIBUTOR->type;
 }
 
 void gic400_turn_off_distributor(void){
@@ -22,8 +21,6 @@ int gic400_init(void){
     GIC400_INTERFACES->ctl = CTL_DISABLE;
     
     uint32_t it_lines_support = GIC400_DISTRIBUTOR->type & 0xF;
-    num_of_it_lines_support = it_lines_support;
-
 
     for(uint32_t i = 0; i < (it_lines_support + 1); ++i){
         // configure each interrupt to be in group 1(non-secure)

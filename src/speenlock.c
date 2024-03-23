@@ -4,6 +4,8 @@
  * https://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html
  * 
 */
+
+
 void acquire(struct speenlock * lock){
     
     disable_irq();
@@ -13,8 +15,8 @@ void acquire(struct speenlock * lock){
         asm volatile("nop");
     }
 
-    // lock->cpu_num = get_processor_id();
-    // lock->name = "trying_lock";
+    lock->cpu_num = get_processor_id();
+    lock->name = "trying_lock";
 }
 
 
