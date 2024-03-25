@@ -18,15 +18,22 @@ extern void putc(void* p, char c);
 
 void configure_el3(uint64_t core_id){
     
-    bool initialization_is_ready = false;
+    bool global_initialization_is_completed = false;
+    uint8_t local_initialization_completion_counter = 0;
+    
     bool debug_wait = true;
 
     w_vbar_el3((uint64_t) &el3_vec);
 
-    if(core_id == 0){
+
+    while(debug_wait) {
+        asm volatile("nop");
+    }
+
+    if(core_id == 0){ // TODO AFTER ALL CONFIGURATION TURN ON DISTRIBUTOR 
 
         muart_init();
-        init_printf(0, unsafe_putc);
+        init_printf(0, putc);
         printf("[EL3]: Welcome. Obtaining and printing information about the system \r \n");
 
         uint64_t parange = get_parange();
@@ -43,31 +50,33 @@ void configure_el3(uint64_t core_id){
 
         gic400_global_init();
         gic400_local_init();
-        gic400_turn_ond();
         gic400_turn_oni();
 
-        __atomic_thread_fence(__ATOMIC_SEQ_CST);
+        __atomic_thread_fence(__ATOMIC_ACQUIRE);
 
-        initialization_is_ready = true;
+        global_initialization_is_completed = true;
 
+        while(__atomic_load_n(&local_initialization_completion_counter, __ATOMIC_RELAXED) != 3){
+            asm volatile("nop");
+        }
+
+        __atomic_thread_fence(__ATOMIC_ACQUIRE);
+        gic400_turn_ond();
     }else{
+        //debug
         while(true);
 
-        while(!initialization_is_ready){
+        while(!global_initialization_is_completed){
             asm volatile("nop");
         }
         gic400_local_init();
         gic400_turn_oni();
+
+        __atomic_add_fetch(&local_initialization_completion_counter, 1, __ATOMIC_ACQUIRE);
     }
 
-    while(debug_wait) {
-        asm volatile("nop");
-    }
-    // all this code correct onli if we clear bss using correct way 
 
 
-
-    gic400_init();
     sys_timer_init();
     gic400_enable_sys_timer(3);
 

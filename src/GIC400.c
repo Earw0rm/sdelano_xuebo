@@ -83,6 +83,7 @@ void gic400_global_init(void){
 
 // call this for each core
 void gic400_local_init(void){
+    GIC400_DISTRIBUTOR->ctl = CTL_DISABLE;
     GIC400_INTERFACES->ctl = CTL_DISABLE;
 
     uint64_t it_lines_support = GIC_TYPE_ITLINESNUMBER(get_gic400_info());

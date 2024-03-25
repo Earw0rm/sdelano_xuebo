@@ -8,7 +8,7 @@
 
 void acquire(struct speenlock * lock){
     
-    disable_irq();
+    // disable_irq();
     
 
     while(__atomic_test_and_set(&(lock->locked), __ATOMIC_ACQUIRE) != 0){
