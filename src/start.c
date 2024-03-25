@@ -40,6 +40,12 @@ void configure_el3(uint64_t core_id){
         printf("[EL3]: cpu_number = %x \r\n",      GIC_TYPE_CPU_NUMBER(gic_type));
         printf("[EL3]: ##################### \r\n");
 
+
+        gic400_global_init();
+        gic400_local_init();
+        gic400_turn_ond();
+        gic400_turn_oni();
+
         __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
         initialization_is_ready = true;
@@ -50,6 +56,8 @@ void configure_el3(uint64_t core_id){
         while(!initialization_is_ready){
             asm volatile("nop");
         }
+        gic400_local_init();
+        gic400_turn_oni();
     }
 
     while(debug_wait) {
