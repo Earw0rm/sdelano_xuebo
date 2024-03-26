@@ -18,14 +18,11 @@ extern char el3_vec[]; // exception.S
 extern void kernel_main(void);
 extern void putc(void* p, char c);
 
+static bool global_initialization_is_completed = false;
+static uint8_t local_initialization_completion_counter = 0;
 
 void configure_el3(uint64_t core_id){
     
-    bool global_initialization_is_completed = false;
-    uint8_t local_initialization_completion_counter = 0;
-    
-    bool debug_wait = true;
-
     w_vbar_el3((uint64_t) &el3_vec);
     w_sctlr_el1(SCTLR_VALUE_MMU_DISABLED);
     w_tcr_el1(TCR_VALUE);
@@ -35,18 +32,14 @@ void configure_el3(uint64_t core_id){
 
     uint64_t stack1_addr = (uint64_t) &kernel_stack1[((core_id + 1) << 12)];
     w_sp_el1(stack1_addr);
-    
- 
 
-    while(debug_wait) {
-        asm volatile("nop");
-    }
+
 
     if(core_id == 0){ // TODO AFTER ALL CONFIGURATION TURN ON DISTRIBUTOR 
 
         muart_init();
         init_printf(0, unsafe_putc);
-        printf("[EL3]: Welcome. \r \n");
+        printf("[EL3]: Welcome. Core_id = %x \r \n", core_id);
 
         uint64_t parange = get_parange();
         uint32_t gic_type = get_gic400_info();
@@ -77,7 +70,8 @@ void configure_el3(uint64_t core_id){
          *  2) map stack and another stuff ( addresses and another stuff) to mmu
         */
         global_initialization_is_completed = true;
-
+        printf("[EL3]: Core_id = %x global_initialization_is_completed = %x \r \n", core_id, global_initialization_is_completed);
+        
         pagetable_t pgtbl = init_mmu(core_id);
         w_ttbr1_el1((uint64_t)pgtbl);
         w_ttbr0_el1((uint64_t)pgtbl);
@@ -89,9 +83,6 @@ void configure_el3(uint64_t core_id){
         __atomic_thread_fence(__ATOMIC_ACQUIRE);
         gic400_turn_ond();
     }else{
-        //debug
-        while(true);
-
         while(!global_initialization_is_completed){
             asm volatile("nop");
         }
@@ -115,7 +106,7 @@ void configure_el3(uint64_t core_id){
     // uint64_t stack1_map_res = mapva(up_of_stack1, up_of_stack1, pgtbl, NORMAL_NC);
 
     
-    volatile bool wait = true;
+    volatile bool wait = false;
     while (wait);
 
     __atomic_thread_fence(__ATOMIC_ACQUIRE);

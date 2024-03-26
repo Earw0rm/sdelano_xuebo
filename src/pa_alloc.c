@@ -38,13 +38,13 @@ uint64_t init_pa_alloc(void){
     uint64_t * sdram_range_3_end = ((uint64_t *) PASTOP);
 
 
-    printf("Ranges of pa_alloc %X => %X, %X => %X, %X => %X \r\n",
-     KERNEL_GUARD_PAGE,
-     VC_BASE_BOT,
-     VC_BASE_TOP,
-     SDRAM_TOP,
-     SDRAM_BOT,
-     PASTOP);
+    // printf("Ranges of pa_alloc %X => %X, %X => %X, %X => %X \r\n",
+    //  KERNEL_GUARD_PAGE,
+    //  VC_BASE_BOT,
+    //  VC_BASE_TOP,
+    //  SDRAM_TOP,
+    //  SDRAM_BOT,
+    //  PASTOP);
 
 
     for(;sdram_range_1 < sdram_range_1_end; sdram_range_1 += PAGE_SIZE){

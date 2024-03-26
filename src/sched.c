@@ -15,10 +15,10 @@ bool init_task_is_initialized = false;
 
 
 
-void init_task_initialization(uint64_t stack1){
-    init_task.stack1 = stack1;
-    init_task_is_initialized = true;
-}
+// void init_task_initialization(uint64_t stack1){
+//     init_task.stack1 = stack1;
+//     init_task_is_initialized = true;
+// }
 
 void preempt_disable(void){
     current->preempt_count++;
