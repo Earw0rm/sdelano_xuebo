@@ -1,6 +1,6 @@
 #ifndef _VM_H
 #define _VM_H
-
+#include "common.h"
 // Table descriptor for 4KB granule size (5853)
 // Only Block descriptor and Page descriptor has attributes
 // Entry of PGD, PUD, PMD which point to a page table
@@ -245,7 +245,8 @@ extern volatile char kpgtbl[];
 */
 pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc);
 uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind);
-pagetable_t init_mmu(init_mmu);
+
+pagetable_t init_mmu(uint64_t core_id);
 #endif
 
 #endif  

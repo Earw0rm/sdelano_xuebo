@@ -33,7 +33,7 @@ void configure_el3(uint64_t core_id){
     w_elr_el3((uint64_t)  (((uint64_t) &kernel_main) )); // | VAKERN_BASE 
     w_vbar_el1((uint64_t) (((uint64_t) &vectors) )); //| VAKERN_BASE
 
-    uint64_t stack1_addr = &kernel_stack1[((core_id + 1) << 12)];
+    uint64_t stack1_addr = (uint64_t) &kernel_stack1[((core_id + 1) << 12)];
     w_sp_el1(stack1_addr);
     
  
@@ -120,7 +120,7 @@ void configure_el3(uint64_t core_id){
 
     __atomic_thread_fence(__ATOMIC_ACQUIRE);
 
-    enable_mmu();
+    // enable_mmu();
     asm volatile("eret");// Jump to kernel_main, el1h 
 
 

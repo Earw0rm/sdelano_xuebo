@@ -84,7 +84,7 @@ struct task_struct{
     .flags         = 1    \
 }
 
-void init_task_initialization(uint64_t stack0, uint64_t stack1);
+// void init_task_initialization(uint64_t stack0, uint64_t stack1);
 
 void preempt_disable(void);
 void preempt_enable(void);
