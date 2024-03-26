@@ -5,7 +5,11 @@
 #include "speenlock.h"
 
 
-static struct speenlock uart_lock = {.cpu_num = -1, .locked = 0, .name = "clear"};
+static struct speenlock uart_lock = {
+    .cpu_num = -1,
+    .locked = 0,
+    .name = "clear"
+};
 
 
 

@@ -20,7 +20,7 @@ debug: kernel8.elf
 	gdb-multiarch build/kernel8.elf -ex "target extended-remote localhost:3333"
 
 ocd:
-	openocd -f adafruit-ft232h.cfg -f rpi4.cfg
+	openocd -f adafruit-ft232h.cfg -f rpi4_jlink.cfg
 
 clean:
 	rm -rf $(BUILD_DIR) *.img

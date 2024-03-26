@@ -245,7 +245,7 @@ extern volatile char kpgtbl[];
 */
 pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc);
 uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind);
-pagetable_t init_mmu(void);
+pagetable_t init_mmu(init_mmu);
 #endif
 
 #endif  

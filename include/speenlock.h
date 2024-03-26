@@ -4,20 +4,12 @@
 #include "common.h"
 /**
  * https://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html
+ * 
+ * 
+ * B2.9.2 Exclusive access instructions and Shareable memory locations
 */
 
-// armv8 ;da
-// spin_lock:
-//     MOV Wt, #1             // Устанавливаем значение, которое мы хотим записать
-// lock_retry:
-//     LDAXR Ws, [lock]       // Атомарно загружаем текущее значение замка
-//     CBNZ Ws, lock_retry    // Если замок уже занят, повторяем попытку
-//     STXR Ws, Wt, [lock]    // Пытаемся атомарно установить замок
-//     CBNZ Ws, lock_retry    // Если STXR не удался, повторяем все снова
-//     RET                    // Замок установлен, возвращаемся из функции
 
-// spin_unlock:
-//     MOV Wt, #0             // Сбрасываем замок
 struct speenlock{    
     char locked;
     char *name;

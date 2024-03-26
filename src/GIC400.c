@@ -23,15 +23,13 @@ void gic400_turn_ond(void){
 
 
 
-
+// do nothing if timer_num > 3
 void gic400_enable_sys_timer(uint32_t timer_num){
-    GIC400_DISTRIBUTOR->ctl = CTL_DISABLE;
+    if(timer_num > 3) return; 
      // interrupt id 96 = sys_timer_0;    99 sys_timer_3
     GIC400_DISTRIBUTOR->isenable[3] = (1 << timer_num);
     // change sys_timer_n to group_1 type (non-secure)
     GIC400_DISTRIBUTOR->igroup[3] = (1 << timer_num);
-
-    GIC400_DISTRIBUTOR->ctl = CTL_ENABLE;
 }
 
 // Distributor and local interface turned off after this function
