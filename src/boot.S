@@ -6,7 +6,6 @@ _bss_is_clear:
     .quad 0x0
 
 .section ".text.boot"
-
 .globl _start
 _start:
     mrs x0, mpidr_el1

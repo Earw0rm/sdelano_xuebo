@@ -2,6 +2,10 @@
 #include "pa_alloc.h"
 #include "arm/arm_util.h"
 #include "printf.h"
+
+extern uint64_t _thread_shared_data_begin;
+extern uint64_t _thread_shared_data_end;
+
 /**
  * TLDR: 
  * The page table address must be aligned to the page size. For example, for 4kb the lower 12 bits must be zeros.
@@ -73,11 +77,13 @@ uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind){
     (*pte) = page_str;
     return 0;
 }
-
+/**
+ * 1) Мапим все ядро от kernel_end до 0 как mair_3 non_sharable
+ * 2) Мапим локи как mair_2 inner_sharable
+ * 3) Мапим девайсы как device_ngrne
+*/
 pagetable_t init_mmu(uint64_t core_id){
     pagetable_t pgtbl = (pagetable_t) &kpgtbl[core_id * 4096];
-
-    
     for(char * pointer = 0; pointer < PA_KERNEL_END; pointer += 0x1000){
         uint64_t res = /**VAKERN_BASE |*/ mapva(( ((uint64_t) pointer)), (uint64_t) pointer, pgtbl, NORMAL_NC);
         if(res < 0) return 0;
