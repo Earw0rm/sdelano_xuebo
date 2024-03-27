@@ -75,8 +75,9 @@ uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind){
 }
 
 pagetable_t init_mmu(uint64_t core_id){
-    // pagetable_t pgtbl = (pagetable_t) &kpgtbl[get_processor_id() * 4096];
-    pagetable_t pgtbl = (pagetable_t) &kpgtbl[core_id * 0x1000];
+    pagetable_t pgtbl = (pagetable_t) &kpgtbl[core_id * 4096];
+
+    
     for(char * pointer = 0; pointer < PA_KERNEL_END; pointer += 0x1000){
         uint64_t res = /**VAKERN_BASE |*/ mapva(( ((uint64_t) pointer)), (uint64_t) pointer, pgtbl, NORMAL_NC);
         if(res < 0) return 0;

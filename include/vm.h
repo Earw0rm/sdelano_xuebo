@@ -131,25 +131,30 @@
 
 /* part of MAIR_EL1
  * Memory region attributes:
- *
- *   n = AttrIndx[2:0]
- *			n	MAIR
- *   DEVICE_nGnRnE	            000	00000000
- *   NORMAL_NON_CACHABLE		001	01000100
+ *   DEVICE_nGnRnE	                                   000 00000000
+ *   NORMAL_NON_CACHABLE		                       001 01000100 // for shared memory
+ *   NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT     010 01110111 // for normal type of memory
 */
 
 typedef enum {
     DEVICE, 
-    NORMAL_NC
+    NORMAL_NC,
+    NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT
 } mair_ind;
 
-#define MT_DEVICE_nGnRnE                    (0x00)
-#define MT_NORMAL_NON_CACHABLE              (0x1)
+#define MT_DEVICE_nGnRnE                                       (0x00)
+#define MT_DEVICE_nGnRnE_FLAGS		                           (0b00000000)
+#define MT_DEVICE_VALUE                                        (MT_DEVICE_nGnRnE_FLAGS << (8 * MT_DEVICE_nGnRnE))
 
-#define MT_DEVICE_nGnRnE_FLAGS		        (0x00)
-#define MT_NORMAL_NON_CACHABLE_FLAGS  		(0x44)
+#define MT_NORMAL_NON_CACHABLE                                 (0x01)
+#define MT_NORMAL_NON_CACHABLE_FLAGS  		                   (0b01000100)
+#define MT_NORMAL_NON_CACHABLE_VALUE                           (MT_NORMAL_NON_CACHABLE_FLAGS << (8 * MT_NORMAL_NON_CACHABLE))
 
-#define MAIR_VALUE  (MT_DEVICE_nGnRnE_FLAGS << (8 * MT_DEVICE_nGnRnE)) | (MT_NORMAL_NON_CACHABLE_FLAGS << (8 * MT_NORMAL_NON_CACHABLE))
+#define MT_NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT       (0x10)
+#define MT_NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT_FLAGS (0b01110111)
+#define MT_NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT_VALUE (MT_NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT_FLAGS << (8 * MT_NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT))
+
+#define MAIR_VALUE  (MT_DEVICE_VALUE | MT_NORMAL_NON_CACHABLE_VALUE | MT_NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT_VALUE)
 
 
 

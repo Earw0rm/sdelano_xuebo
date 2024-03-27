@@ -15,8 +15,9 @@ volatile char kernel_stack1[4096 * 4];
 
 extern char vectors[]; // exception.S
 extern char el3_vec[]; // exception.S
+
 extern void kernel_main(void);
-extern void putc(void* p, char c);
+extern void putc(void* p, char c); // why do we need this?
 
 
 //sry for that
@@ -26,6 +27,8 @@ static uint8_t eret_barrier = 0;
 
 // PBASE depend on this variable;
 bool configuration_is_completed = 0;
+
+
 void configure_el3(uint64_t core_id){
     
     w_vbar_el3((uint64_t) &el3_vec);
@@ -37,8 +40,6 @@ void configure_el3(uint64_t core_id){
 
     uint64_t stack1_addr = (uint64_t) &kernel_stack1[((core_id + 1) << 12)];
     w_sp_el1(stack1_addr);
-
-
 
     if(core_id == 0){ // TODO AFTER ALL CONFIGURATION TURN ON DISTRIBUTOR 
 
@@ -78,7 +79,7 @@ void configure_el3(uint64_t core_id){
         
         pagetable_t pgtbl = init_mmu(core_id);
         w_ttbr1_el1((uint64_t)pgtbl);
-        w_ttbr0_el1((uint64_t)pgtbl);
+
 
         while(__atomic_load_n(&local_initialization_completion_counter, __ATOMIC_RELAXED) != 3){
             asm volatile("nop");
@@ -98,7 +99,7 @@ void configure_el3(uint64_t core_id){
         */
         pagetable_t pgtbl = init_mmu(core_id);
         w_ttbr1_el1((uint64_t)pgtbl);
-        w_ttbr0_el1((uint64_t)pgtbl);
+
     
         __atomic_add_fetch(&local_initialization_completion_counter, 1, __ATOMIC_ACQUIRE);
     }
@@ -114,7 +115,6 @@ void configure_el3(uint64_t core_id){
     while (wait);
 
     //IM A GOD OF MULTICORE PROGRAMMING WITHOUT A LOCK
-
     if(__atomic_add_fetch(&eret_barrier, 1, __ATOMIC_ACQUIRE) == 4){
         configuration_is_completed = 1;
     }
@@ -123,7 +123,7 @@ void configure_el3(uint64_t core_id){
             asm volatile("nop");
     }
 
-    // enable_mmu();
+    enable_mmu();
     asm volatile("eret");// Jump to kernel_main, el1h 
 
 
