@@ -3,8 +3,7 @@
 #include "arm/arm_util.h"
 #include "printf.h"
 
-extern uint64_t _thread_shared_data_begin;
-extern uint64_t _thread_shared_data_end;
+
 
 /**
  * TLDR: 
@@ -84,11 +83,21 @@ uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind){
 */
 pagetable_t init_mmu(uint64_t core_id){
     pagetable_t pgtbl = (pagetable_t) &kpgtbl[core_id * 4096];
+
+
+    // general all kernel code and variables
     for(char * pointer = 0; pointer < PA_KERNEL_END; pointer += 0x1000){
-        uint64_t res = /**VAKERN_BASE |*/ mapva(( ((uint64_t) pointer)), (uint64_t) pointer, pgtbl, NORMAL_NC);
+        uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)), (uint64_t) pointer, pgtbl, NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT);
         if(res < 0) return 0;
     }
-
+    // shared kernel 
+    for(char * pointer = ((char *) PA_THREAD_SHARED_DATA_BEGIN); pointer < ((char *) PA_THREAD_SHARED_DATA_END); pointer += 0x1000){
+        uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)), (uint64_t) pointer, pgtbl, NORMAL_NC);
+        if(res < 0) return 0;
+    }
+    //devices
+    //TODO not implemented
+    
     return pgtbl;
 }
 

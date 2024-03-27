@@ -27,11 +27,14 @@
 #define TERMINAL_PAGE (PA_KERNEL_END + 1*PAGE_SIZE)
 #define KERNEL_GUARD_PAGE (TERMINAL_PAGE)
 
+#define PA_THREAD_SHARED_DATA_BEGIN (&_thread_shared_data_begin)
+#define PA_THREAD_SHARED_DATA_END (&_thread_shared_data_end)
 
 
 #ifndef __ASSEMBLER__
 extern volatile const char _end_of_kernel_addr;
-
+extern uint64_t _thread_shared_data_begin;
+extern uint64_t _thread_shared_data_end;
 
 struct run{
     struct run * next;

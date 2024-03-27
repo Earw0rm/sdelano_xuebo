@@ -28,6 +28,9 @@ SECTIONS
     .data.thread_shared : {
         *(.data.thread_shared)
     }
+
+    . += 0x1000;
+    . = ALIGN(4096);
     
     _thread_shared_data_end = .;
 

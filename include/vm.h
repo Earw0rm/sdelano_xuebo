@@ -56,7 +56,7 @@
 * 4)The page granule size is 4KB.
 * 5)Not use address space ID (ASID).
 */
-#define VAKERN_BASE ((uint64_t) 0xffff << 48)
+#define VAKERN_BASE ((uint64_t) 0xffffull << 48)
 
 
 // part of TCR_EL1
