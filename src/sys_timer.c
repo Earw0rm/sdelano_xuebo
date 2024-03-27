@@ -14,4 +14,3 @@ void sys_timer_recharge(uint32_t timer_num, uint32_t recharge_time){
     SYSTEM_TIMER->compare[timer_num] = cl + recharge_time;
     SYSTEM_TIMER->control_status = (1 << timer_num);
 }
-

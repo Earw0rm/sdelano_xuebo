@@ -5,6 +5,7 @@
 #include "speenlock.h"
 
 
+__attribute__((section(".data.thread_shared")))
 static struct speenlock uart_lock = {
     .cpu_num = -1,
     .locked = 0,

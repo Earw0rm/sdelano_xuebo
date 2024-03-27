@@ -18,9 +18,14 @@ extern char el3_vec[]; // exception.S
 extern void kernel_main(void);
 extern void putc(void* p, char c);
 
+
+//sry for that
 static bool global_initialization_is_completed = false;
 static uint8_t local_initialization_completion_counter = 0;
+static uint8_t eret_barrier = 0;
 
+// PBASE depend on this variable;
+bool configuration_is_completed = 0;
 void configure_el3(uint64_t core_id){
     
     w_vbar_el3((uint64_t) &el3_vec);
@@ -41,8 +46,8 @@ void configure_el3(uint64_t core_id){
         init_printf(0, unsafe_putc);
         printf("[EL3]: Welcome. Core_id = %x \r \n", core_id);
 
-        uint64_t parange = get_parange();
-        uint32_t gic_type = get_gic400_info();
+        // uint64_t parange = get_parange();
+        // uint32_t gic_type = get_gic400_info();
 
         w_hcr_el2(HCR_VALUE);
         w_scr_el3(SCR_VALUE);
@@ -70,7 +75,6 @@ void configure_el3(uint64_t core_id){
          *  2) map stack and another stuff ( addresses and another stuff) to mmu
         */
         global_initialization_is_completed = true;
-        printf("[EL3]: Core_id = %x global_initialization_is_completed = %x \r \n", core_id, global_initialization_is_completed);
         
         pagetable_t pgtbl = init_mmu(core_id);
         w_ttbr1_el1((uint64_t)pgtbl);
@@ -109,7 +113,15 @@ void configure_el3(uint64_t core_id){
     volatile bool wait = false;
     while (wait);
 
-    __atomic_thread_fence(__ATOMIC_ACQUIRE);
+    //IM A GOD OF MULTICORE PROGRAMMING WITHOUT A LOCK
+
+    if(__atomic_add_fetch(&eret_barrier, 1, __ATOMIC_ACQUIRE) == 4){
+        configuration_is_completed = 1;
+    }
+    
+    while(__atomic_load_n(&eret_barrier, __ATOMIC_RELEASE) != 4){
+            asm volatile("nop");
+    }
 
     // enable_mmu();
     asm volatile("eret");// Jump to kernel_main, el1h 

@@ -48,7 +48,7 @@ pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc){
         }
 
     }
-    // pte_t *pte_res = &pagetable[VA_PTBL_IND(va, 3)];
+
 
     return &pagetable[VA_PTBL_IND(va, 3)]; // last 3nd level without offset
 }

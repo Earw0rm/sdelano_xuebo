@@ -20,7 +20,15 @@ SECTIONS
          *(.rodata)
     }
 
+    . += 0x1000;
+    . = ALIGN(4096);
 
+    _thread_shared_data_begin = .;
+    .data.thread_shared : {
+        *(.data.thread_shared)
+    }
+    _thread_shared_data_end = .;
+    
     .data : { 
         *(.data) 
     }
