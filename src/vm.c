@@ -2,7 +2,7 @@
 #include "pa_alloc.h"
 #include "arm/arm_util.h"
 #include "printf.h"
-
+#include "base.h"
 
 
 /**
@@ -58,7 +58,7 @@ pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc){
 
 
 // address round down before map. Support only per page mapping
-uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind){
+uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharability_flag sflag){
     va = PGROUNDDOWN(va);
     pa = PGROUNDDOWN(pa);
 
@@ -71,7 +71,7 @@ uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind){
     
 
     // CHECK PAGE LOWER ATTRIBUTES AND UPPER ATTRIBUTES
-    uint64_t page_str = (pa | VALID_DESCRIPTOR | PAGE_DESCRIPTOR | (ind << 2) | ACCESS_FLAG | ACCESS_PERMISSION);
+    uint64_t page_str = (pa | VALID_DESCRIPTOR | PAGE_DESCRIPTOR | ind | ACCESS_FLAG | ACCESS_PERMISSION | sflag);
 
     (*pte) = page_str;
     return 0;
@@ -87,17 +87,33 @@ pagetable_t init_mmu(uint64_t core_id){
 
     // general all kernel code and variables
     for(char * pointer = 0; pointer < PA_KERNEL_END; pointer += 0x1000){
-        uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)), (uint64_t) pointer, pgtbl, NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT);
+        uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)), 
+                                            (uint64_t) pointer,
+                                            pgtbl,
+                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
+                                            NON_SHAREABLE);
         if(res < 0) return 0;
     }
+
     // shared kernel 
     for(char * pointer = ((char *) PA_THREAD_SHARED_DATA_BEGIN); pointer < ((char *) PA_THREAD_SHARED_DATA_END); pointer += 0x1000){
-        uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)), (uint64_t) pointer, pgtbl, NORMAL_NC);
+        uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)),
+                                            (uint64_t) pointer, 
+                                            pgtbl,
+                                            NORMAL_NC,
+                                            INNER_SHAREABLE);
         if(res < 0) return 0;
     }
     //devices
-    //TODO not implemented
-    
+    for(char * pointer = ((char *) ARM_LOCAL_PERIPHERAL_BOT); pointer < ((char *) MAIN_PERIPHERAL_TOP); pointer += 0x1000){
+        uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)),
+                                            (uint64_t) pointer, 
+                                            pgtbl,
+                                            DEVICE,
+                                            NON_SHAREABLE);
+        if(res < 0) return 0;
+    }
+
     return pgtbl;
 }
 

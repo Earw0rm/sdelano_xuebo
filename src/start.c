@@ -119,7 +119,7 @@ void configure_el3(uint64_t core_id){
         configuration_is_completed = 1;
     }
     
-    while(__atomic_load_n(&eret_barrier, __ATOMIC_RELEASE) != 4){
+    while(__atomic_load_n(&eret_barrier, __ATOMIC_SEQ_CST) != 4){
             asm volatile("nop");
     }
 

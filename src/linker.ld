@@ -31,9 +31,12 @@ SECTIONS
 
     . += 0x1000;
     . = ALIGN(4096);
-    
+
     _thread_shared_data_end = .;
 
+    . += 0x1000;
+    . = ALIGN(4096);
+    
     .data : { 
         *(.data) 
     }

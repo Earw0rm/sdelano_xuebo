@@ -137,21 +137,21 @@
 */
 
 typedef enum {
-    DEVICE, 
-    NORMAL_NC,
-    NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT
+    DEVICE = 0 << 2, 
+    NORMAL_NC = 1 << 2,
+    NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT = 2 << 2
 } mair_ind;
 
-#define MT_DEVICE_nGnRnE                                       (0x00)
-#define MT_DEVICE_nGnRnE_FLAGS		                           (0b00000000)
+#define MT_DEVICE_nGnRnE                                       (0)
+#define MT_DEVICE_nGnRnE_FLAGS		                           (0b00000000ull)
 #define MT_DEVICE_VALUE                                        (MT_DEVICE_nGnRnE_FLAGS << (8 * MT_DEVICE_nGnRnE))
 
-#define MT_NORMAL_NON_CACHABLE                                 (0x01)
-#define MT_NORMAL_NON_CACHABLE_FLAGS  		                   (0b01000100)
+#define MT_NORMAL_NON_CACHABLE                                 (1)
+#define MT_NORMAL_NON_CACHABLE_FLAGS  		                   (0b01000100ull)
 #define MT_NORMAL_NON_CACHABLE_VALUE                           (MT_NORMAL_NON_CACHABLE_FLAGS << (8 * MT_NORMAL_NON_CACHABLE))
 
-#define MT_NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT       (0x10)
-#define MT_NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT_FLAGS (0b01110111)
+#define MT_NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT       (2)
+#define MT_NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT_FLAGS (0b01110111ull)
 #define MT_NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT_VALUE (MT_NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT_FLAGS << (8 * MT_NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT))
 
 #define MAIR_VALUE  (MT_DEVICE_VALUE | MT_NORMAL_NON_CACHABLE_VALUE | MT_NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT_VALUE)
@@ -201,9 +201,16 @@ typedef enum {
 // as inner shareable or outer shareable, or both, means that the location is shared with other
 // observers, for example, a GPU or DMA device might be considered another observer. In the
 // same way, the division between inner and outer is IMPLEMENTATION DEFINED.
-#define NON_SHAREABLE   (0b00 << 6)
-#define OUTER_SHAREABLE (0b10 << 6)
-#define INNER_SHAREABLE (0b11 << 6)
+// #define NON_SHAREABLE   (0b00 << 6)
+// #define OUTER_SHAREABLE (0b10 << 6)
+// #define INNER_SHAREABLE (0b11 << 6)
+
+typedef enum {
+    NON_SHAREABLE = 0b00 << 6,
+    OUTER_SHAREABLE = 0b10 << 6,
+    INNER_SHAREABLE = 0b11 << 6
+} sharability_flag;
+
 /**
  * Summary of instruction access and execution permissions for stage 1 translations 5871
  * 
@@ -249,7 +256,7 @@ extern volatile char kpgtbl[];
  *   
 */
 pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc);
-uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind);
+uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharability_flag sflag);
 
 pagetable_t init_mmu(uint64_t core_id);
 #endif
