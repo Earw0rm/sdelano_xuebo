@@ -190,7 +190,7 @@ typedef enum {
 
 
 
-//Software management of the Access flag 5876
+//Software management of the Access flag 5876(page)
 //If flag does not set, then generate sync exception 
 #define ACCESS_FLAG             0x1 << 10
 
