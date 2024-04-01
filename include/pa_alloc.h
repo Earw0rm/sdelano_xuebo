@@ -46,7 +46,7 @@ extern struct run * freepages;
 bool zero_range(uint64_t * astart, uint64_t size);
 uint64_t init_pa_alloc(void);
 uint64_t get_num_of_free_pages(void);
-
+uint64_t get_page_unsafe(void);
 uint64_t get_page(void);
 
 bool free_page(uint64_t paddr);

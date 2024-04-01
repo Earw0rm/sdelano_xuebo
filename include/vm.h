@@ -255,10 +255,11 @@ extern volatile char kpgtbl[];
  *  4  | 43 | IA[20:12] | 48 | IA[15:12] | FEAT_TTST is implemented           |  
  *   
 */
-pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc);
-uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharability_flag sflag);
+pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc, bool unsafe);
+uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharability_flag sflag, bool unsafe_alloc);
 
-pagetable_t init_mmu(uint64_t core_id);
+
+uint8_t kpgtbl_init();
 #endif
 
 #endif  

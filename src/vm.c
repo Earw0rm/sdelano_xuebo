@@ -21,12 +21,12 @@
 // 64KB               | 48 bits or 52 bits | TTBR_ELx[47:16]                | OA[47:16]
 // __attribute__((aligned(16))) volatile char kpgtbl[4096 * 4] = {0};
 
-__attribute__((aligned(0x1000))) volatile char kpgtbl[0x4000] = {0};
+__attribute__((aligned(0x1000))) volatile char kpgtbl[0x1000] = {0};
 
 // Return the address of the PTE in page table pagetable
 // that corresponds to virtual address va.  If alloc!=0,
 // create any required page-table pages.
-pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc){
+pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc, bool unsafe){
     // if va >= maxva then panic 
 
     for(uint64_t level = 0; level <= 2; ++level){
@@ -40,7 +40,11 @@ pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc){
 
         }else{
             if(!alloc) return 0;
-            uint64_t page = get_page();
+            
+            uint64_t page;
+            
+            if(unsafe) page = get_page_unsafe();
+            else page = get_page();
 
             zero_range((uint64_t *) page, PAGE_SIZE);
             
@@ -58,13 +62,13 @@ pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc){
 
 
 // address round down before map. Support only per page mapping
-uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharability_flag sflag){
+uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharability_flag sflag, bool unsafe_alloc){
     va = PGROUNDDOWN(va);
     pa = PGROUNDDOWN(pa);
 
     if((va & 0xfffull) != 0 || (pa & 0xfffull) != 0) return -1;
 
-    pte_t* pte =  walk(pgtbl, va, true);
+    pte_t* pte =  walk(pgtbl, va, true, unsafe_alloc);
     if(pte == 0){
         return -1;
     }
@@ -81,8 +85,8 @@ uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharab
  * 2) Мапим локи как mair_2 inner_sharable
  * 3) Мапим девайсы как device_ngrne
 */
-pagetable_t init_mmu(uint64_t core_id){
-    pagetable_t pgtbl = (pagetable_t) &kpgtbl[core_id * 4096];
+uint8_t kpgtbl_init(void){
+        pagetable_t pgtbl = (pagetable_t) &kpgtbl;
 
 
     // general all kernel code and variables
@@ -91,8 +95,8 @@ pagetable_t init_mmu(uint64_t core_id){
                                             (uint64_t) pointer,
                                             pgtbl,
                                             NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
-                                            NON_SHAREABLE);
-        if(res < 0) return 0;
+                                            NON_SHAREABLE, true);
+        if(res < 0) return -1;
     }
 
     // shared kernel 
@@ -101,8 +105,8 @@ pagetable_t init_mmu(uint64_t core_id){
                                             (uint64_t) pointer, 
                                             pgtbl,
                                             NORMAL_NC,
-                                            INNER_SHAREABLE);
-        if(res < 0) return 0;
+                                            INNER_SHAREABLE, true);
+        if(res < 0) return -2;
     }
     //devices
     for(char * pointer = ((char *) ARM_LOCAL_PERIPHERAL_BOT); pointer < ((char *) MAIN_PERIPHERAL_TOP); pointer += 0x1000){
@@ -110,11 +114,10 @@ pagetable_t init_mmu(uint64_t core_id){
                                             (uint64_t) pointer, 
                                             pgtbl,
                                             DEVICE,
-                                            NON_SHAREABLE);
-        if(res < 0) return 0;
+                                            NON_SHAREABLE, true);
+        if(res < 0) return -3;
     }
-
-    return pgtbl;
+    return 0;
 }
 
 

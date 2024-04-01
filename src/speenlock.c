@@ -3,6 +3,10 @@
 /**
  * https://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html
  * 
+ * 
+ * ldra - load acquire 
+ * stlr - store release 
+ * 
 */
 
 

@@ -22,8 +22,12 @@ extern void putc(void* p, char c); // why do we need this?
 
 //sry for that
 static bool global_initialization_is_completed = false;
+static const bool global_initialization_completed = true; // for atomic store
+
 static uint8_t local_initialization_completion_counter = 0;
 static uint8_t eret_barrier = 0;
+
+static const bool atomic_test = true;
 
 // PBASE depend on this variable;
 bool configuration_is_completed = 0;
@@ -70,23 +74,24 @@ void configure_el3(uint64_t core_id){
 
         //init_task_initialization(up_of_stack0, up_of_stack1); We need another pointer to the stack in multiprocessor systems
 
-        __atomic_thread_fence(__ATOMIC_ACQUIRE);    
+        uint8_t init_res = kpgtbl_init(); // check
+        w_ttbr1_el1((uint64_t)&kpgtbl);
+
+
         /**
          *  1) check than pgtbl is not 0 
          *  2) map stack and another stuff ( addresses and another stuff) to mmu
         */
-        global_initialization_is_completed = true;
+       __atomic_store(&global_initialization_is_completed, &global_initialization_completed, __ATOMIC_ACQ_REL);
+
         
-        pagetable_t pgtbl = init_mmu(core_id);
-        w_ttbr1_el1((uint64_t)pgtbl);
-
-
-        while(__atomic_load_n(&local_initialization_completion_counter, __ATOMIC_RELAXED) != 3){
+        while(__atomic_load_n(&local_initialization_completion_counter, __ATOMIC_ACQUIRE) != 3){
             asm volatile("nop");
         }
 
-        __atomic_thread_fence(__ATOMIC_ACQUIRE);
         gic400_turn_ond();
+
+        __atomic_thread_fence(__ATOMIC_RELEASE);
     }else{
         while(!global_initialization_is_completed){
             asm volatile("nop");
@@ -94,14 +99,13 @@ void configure_el3(uint64_t core_id){
         gic400_local_init();
         gic400_turn_oni();
         /**
-         *  1) check than pgtbl is not 0 
+
          *  2) map stack and another stuff ( addresses and another stuff) to mmu
         */
-        pagetable_t pgtbl = init_mmu(core_id);
-        w_ttbr1_el1((uint64_t)pgtbl);
+        w_ttbr1_el1((uint64_t)&kpgtbl);
 
     
-        __atomic_add_fetch(&local_initialization_completion_counter, 1, __ATOMIC_ACQUIRE);
+        __atomic_add_fetch(&local_initialization_completion_counter, 1, __ATOMIC_ACQ_REL);
     }
 
 
@@ -115,15 +119,17 @@ void configure_el3(uint64_t core_id){
     while (wait);
 
     //IM A GOD OF MULTICORE PROGRAMMING WITHOUT A LOCK
-    if(__atomic_add_fetch(&eret_barrier, 1, __ATOMIC_ACQUIRE) == 4){
+    if(__atomic_add_fetch(&eret_barrier, 1, __ATOMIC_RELEASE) == 4){
         configuration_is_completed = 1;
     }
     
-    while(__atomic_load_n(&eret_barrier, __ATOMIC_SEQ_CST) != 4){
+    while(__atomic_load_n(&eret_barrier, __ATOMIC_ACQUIRE) != 4){
             asm volatile("nop");
     }
 
     enable_mmu();
+    
+    asm volatile("isb");
     asm volatile("eret");// Jump to kernel_main, el1h 
 
 

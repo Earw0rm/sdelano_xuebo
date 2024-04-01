@@ -1,6 +1,16 @@
 #include "pa_alloc.h"
 #include "common.h"
 #include "printf.h"
+#include "speenlock.h"
+
+
+__attribute__((section(".data.thread_shared")))
+static struct speenlock pa_alloc_lock = {
+    .cpu_num = -1,
+    .locked = 0,
+    .name = "clear"
+};
+
 
 // each page it is pointer to LOWER address.
 struct run * freepages = ((struct run*) TERMINAL_PAGE);
@@ -76,21 +86,38 @@ uint64_t get_num_of_free_pages(void){
     return counter;
 }
 
-uint64_t get_page(void){
+uint64_t get_page_unsafe(void){
     struct run * page = freepages;
     if(page == ((struct run*) TERMINAL_PAGE)){
         return 0;
     }
     freepages = page->next;
-    return ((uint64_t) page);
+    return ((uint64_t) page);    
 }
 
+uint64_t get_page(void){
+    //lock TODO
+    struct run * page = freepages;
+    if(page == ((struct run*) TERMINAL_PAGE)){
+        return 0;
+    }
+    freepages = page->next;
+    //unlock
+    return ((uint64_t) page);
+
+}
+
+
 bool free_page(uint64_t paddr){
+
     if(paddr == 0){
         return false;
     }        
+    //lock
     struct run * page = ((struct run *) paddr);
     page->next = freepages;
     freepages = page;
+    //unlock
     return true;
+
 }
