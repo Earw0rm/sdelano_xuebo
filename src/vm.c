@@ -146,6 +146,8 @@ inline static void kpgtbl_debug_print_l(pagetable_t pgtbl, uint8_t level){
 
 //call only from el3
 void kpgtbl_debug_print(pagetable_t pgtbl){
+    printf("################################\r\n");
     kpgtbl_debug_print_l(pgtbl, 0);
+    printf("################################\r\n");
 }
 

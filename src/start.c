@@ -76,9 +76,8 @@ void configure_el3(uint64_t core_id){
         uint8_t init_res = kpgtbl_init(); // check
         w_ttbr1_el1((uint64_t)&kpgtbl);
         
-        printf("[EL3] pagetable debug => ################\r\n");
         kpgtbl_debug_print((pagetable_t)&kpgtbl);
-        printf("[EL3] => ################################\r\n");
+
         /**
          *  1) check than pgtbl is not 0 
          *  2) map stack and another stuff ( addresses and another stuff) to mmu
