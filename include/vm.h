@@ -177,9 +177,11 @@ typedef enum {
 #define VA_PTBL_OFFSET(va) (va & 0xfff)
 
 
-
+//boolshet
 #define PTE2PA(pte) (((*pte) & ((1ull << 48) - 1)) >> 12)
 #define PA2PTE(addr) (addr << 12)
+
+
 #define DAADDR(addr) ((addr & ((1ull << 48) - 1)) & (~(0xfffull)))
 #define PGROUNDDOWN(addr) ((addr) & ~(4096 - 1))
 
@@ -259,7 +261,9 @@ pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc, bool unsafe);
 uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharability_flag sflag, bool unsafe_alloc);
 
 
-uint8_t kpgtbl_init();
-#endif
+uint8_t kpgtbl_init(void);
+void kpgtbl_debug_print(pagetable_t pgtbl);
 
+
+#endif
 #endif  

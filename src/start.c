@@ -23,12 +23,13 @@ extern void putc(void* p, char c); // why do we need this?
 //sry for that
 static bool global_initialization_is_completed = false;
 static uint8_t local_initialization_completion_counter = 0;
-static uint8_t eret_barrier = 0;
+
 
 
 
 // PBASE depend on this variable;
 bool configuration_is_completed = false;
+
 
 
 void configure_el3(uint64_t core_id){
@@ -49,7 +50,6 @@ void configure_el3(uint64_t core_id){
 
         muart_init();
         init_printf(0, unsafe_putc);
-        printf("[EL3]: Welcome. Core_id = %x \r \n", core_id);
 
         // uint64_t parange = get_parange();
         // uint32_t gic_type = get_gic400_info();
@@ -66,7 +66,6 @@ void configure_el3(uint64_t core_id){
         sys_timer_init();
         gic400_enable_sys_timer(3); //todo peredelat'
 
-
         //phisycal allocator
         // todo for local test
         uint64_t num_of_init_pages = init_pa_alloc();
@@ -76,37 +75,33 @@ void configure_el3(uint64_t core_id){
 
         uint8_t init_res = kpgtbl_init(); // check
         w_ttbr1_el1((uint64_t)&kpgtbl);
-
-
+        
+        printf("[EL3] pagetable debug => ################\r\n");
+        kpgtbl_debug_print((pagetable_t)&kpgtbl);
+        printf("[EL3] => ################################\r\n");
         /**
          *  1) check than pgtbl is not 0 
          *  2) map stack and another stuff ( addresses and another stuff) to mmu
         */
-        const bool global_initialization_completed = true;
-       __atomic_store(&global_initialization_is_completed, &global_initialization_completed, __ATOMIC_RELEASE);
+        const bool completed = true;
 
-        
+       __atomic_store(&global_initialization_is_completed, &completed, __ATOMIC_RELEASE);
+
         while(__atomic_load_n(&local_initialization_completion_counter, __ATOMIC_ACQUIRE) != 3){
             asm volatile("nop");
         }
 
         gic400_turn_ond();
-        bool completed = true;
         __atomic_store(&configuration_is_completed, &completed, __ATOMIC_RELEASE);
-
     }else{
         while(!__atomic_load_n(&global_initialization_is_completed, __ATOMIC_ACQUIRE)){
             asm volatile("nop");
         }
+
         gic400_local_init();
         gic400_turn_oni();
-        /**
-
-         *  2) map stack and another stuff ( addresses and another stuff) to mmu
-        */
+        
         w_ttbr1_el1((uint64_t)&kpgtbl);
-
-    
         __atomic_add_fetch(&local_initialization_completion_counter, 1, __ATOMIC_RELEASE);
     }
 
@@ -116,17 +111,18 @@ void configure_el3(uint64_t core_id){
     // uint64_t stack0_map_res = mapva(up_of_stack0, up_of_stack0, pgtbl, NORMAL_NC);
     // uint64_t stack1_map_res = mapva(up_of_stack1, up_of_stack1, pgtbl, NORMAL_NC);
 
-    
+
     volatile bool wait = false; // debug wait
     while (wait);
 
+
     while(__atomic_load_n(&configuration_is_completed, __ATOMIC_ACQUIRE) != true){
-        asm volatile("nop");        
+        asm volatile("nop");
     }
     __atomic_thread_fence(__ATOMIC_RELEASE);
 
-
     enable_mmu();
+
     asm volatile("isb");
     asm volatile("eret");// Jump to kernel_main, el1h 
 

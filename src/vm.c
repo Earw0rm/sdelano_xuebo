@@ -120,4 +120,32 @@ uint8_t kpgtbl_init(void){
     return 0;
 }
 
+inline static void kpgtbl_debug_print_l(pagetable_t pgtbl, uint8_t level){
+
+    for(uint8_t i = 0; (i < level && level != 3); ++i){
+        printf("\t");
+    }
+
+    for(pagetable_t pgtbl_p = pgtbl; pgtbl_p < (pgtbl + 512); ++pgtbl_p){
+        
+        if(level != 3 && (((*pgtbl_p) & VALID_DESCRIPTOR) == 1)){
+            uint64_t addr = DAADDR(*pgtbl_p);
+            printf("addr:%x \r\n", addr);
+
+            pagetable_t next_pgtbl = (pagetable_t)addr;
+            kpgtbl_debug_print_l(next_pgtbl, ++level);
+        }else if(level == 3 & ((*pgtbl_p) & VALID_DESCRIPTOR) == 1){
+            printf("\t\t\t");
+            uint64_t pa = DAADDR(*pgtbl_p);
+            printf("pa:%x \r\n", pa);
+        }
+
+    }
+
+} 
+
+//call only from el3
+void kpgtbl_debug_print(pagetable_t pgtbl){
+    kpgtbl_debug_print_l(pgtbl, 0);
+}
 

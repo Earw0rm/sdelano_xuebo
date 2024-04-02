@@ -118,7 +118,8 @@ error_invalid_el1t:
 	handle_invalid_entry ERROR_INVALID_EL1t
 
 sync_invalid_el1h:
-	handle_invalid_entry SYNC_INVALID_EL1h
+	mrs x0, far_el1
+	b sync_invalid_el1h // for debug purpose
 
 fiq_invalid_el1h:
 	handle_invalid_entry FIQ_INVALID_EL1h
@@ -211,7 +212,8 @@ el3_vec:
 
 
 el3_panic:
-    mrs x0, esr_el3
-    mrs x1, elr_el3	
-	bl el3_panic_msg
-	b err_hang
+	b el3_panic
+//    mrs x0, esr_el3
+//    mrs x1, elr_el3	
+//	bl el3_panic_msg
+//	b err_hang
