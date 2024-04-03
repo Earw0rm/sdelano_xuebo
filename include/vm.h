@@ -83,12 +83,16 @@
 #define TCR_T0SZ ((64 - 48) << 0)
 #define TCR_T1SZ ((64 - 48) << 16)
 
+
+#define TCR_T0SZ_EL3 (0 << 0)
+
 // granule size 4kb for TTBR0
 #define TCR_TG0_4K (0 << 14)
 // granule size 4kb for TTBR1
 #define TCR_TG1_4K (2 << 30)
 
-#define TCR_TG_EL3 ()
+//granule size 4kb bor ttbr1_el3
+#define TCR_TG_EL3 (0x0 << 14)
 /**
  *  TCR_EL1.DS[59] 
  ***0b0: Bits[49:48] of translation descriptors are RES0.
@@ -129,7 +133,7 @@
 #define TCR_IPS (0x5ull << 32)
 
 #define TCR_VALUE (TCR_T0SZ | TCR_T1SZ | TCR_TG0_4K | TCR_TG1_4K )
-#define TCR_EL3_VALUE (0 | TCR_DS_EL3)
+#define TCR_EL3_VALUE (0 | TCR_TG_EL3 | TCR_DS_EL3)
 
 
 /* part of MAIR_EL1
