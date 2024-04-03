@@ -88,6 +88,7 @@
 // granule size 4kb for TTBR1
 #define TCR_TG1_4K (2 << 30)
 
+#define TCR_TG_EL3 ()
 /**
  *  TCR_EL1.DS[59] 
  ***0b0: Bits[49:48] of translation descriptors are RES0.
@@ -113,7 +114,7 @@
  **/
 
 #define TCR_DS (0ull << 59)
-
+#define TCR_DS_EL3 (0ull << 32)
 /*
 * TCR_IPS(Output address size configuration). Sinse TCR_DS = 0, and granularity is 4kb = maximum possible size is 48.
 * This field cannot configure OA greater then maximum PA size (ID_AA64MMFR0_EL1.PARange).
@@ -128,6 +129,8 @@
 #define TCR_IPS (0x5ull << 32)
 
 #define TCR_VALUE (TCR_T0SZ | TCR_T1SZ | TCR_TG0_4K | TCR_TG1_4K )
+#define TCR_EL3_VALUE (0 | TCR_DS_EL3)
+
 
 /* part of MAIR_EL1
  * Memory region attributes:
@@ -230,7 +233,7 @@ typedef enum {
 #include "common.h"
 
 extern volatile char kpgtbl[];
-
+extern volatile char machine_pgtbl[];
 
 
 /**
@@ -262,6 +265,7 @@ uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharab
 
 
 uint8_t kpgtbl_init(void);
+uint8_t machine_pgtbl_init(void);
 void kpgtbl_debug_print(pagetable_t pgtbl);
 
 

@@ -6,12 +6,14 @@
 #include "pa_alloc.h"
 #include "arm/sysregs.h"
 #include "sched.h"
+#include "vm.h"
+
 
 __attribute__((aligned(16)))
-volatile char init_stack3[4096 * 4]; 
+volatile char init_stack3[0x4000]; 
 
 __attribute__((aligned(16)))
-volatile char kernel_stack1[4096 * 4];
+volatile char kernel_stack1[0x4000];
 
 extern char vectors[]; // exception.S
 extern char el3_vec[]; // exception.S
@@ -31,7 +33,6 @@ static uint8_t local_initialization_completion_counter = 0;
 bool configuration_is_completed = false;
 
 
-
 void configure_el3(uint64_t core_id){
     
     w_vbar_el3((uint64_t) &el3_vec);
@@ -46,18 +47,29 @@ void configure_el3(uint64_t core_id){
     uint64_t stack1_addr = (uint64_t) &kernel_stack1[((core_id + 1) << 12)];
     w_sp_el1(VAKERN_BASE | stack1_addr);
 
-    if(core_id == 0){ // TODO AFTER ALL CONFIGURATION TURN ON DISTRIBUTOR 
+    if(core_id == 0){
+        w_tcr_el3(TCR_EL3_VALUE);
+        w_mair_el3(MAIR_VALUE);
+
+        uint64_t num_of_init_pages = init_pa_alloc();
+        uint64_t pages_after_init = get_num_of_free_pages();
+
+        machine_pgtbl_init();
+        
+        volatile bool wait = true; // debug wait
+        while (wait);
+
+        w_ttbr0_el3((uint64_t)&machine_pgtbl);
+        enable_mmu_el3();
+
 
         muart_init();
         init_printf(0, unsafe_putc);
-
-        // uint64_t parange = get_parange();
-        // uint32_t gic_type = get_gic400_info();
+        kpgtbl_debug_print((pagetable_t)&kpgtbl);
 
         w_hcr_el2(HCR_VALUE);
         w_scr_el3(SCR_VALUE);
         w_spsr_el3(SPSR_VALUE);
-
 
         gic400_global_init();
         gic400_local_init();
@@ -66,16 +78,14 @@ void configure_el3(uint64_t core_id){
         sys_timer_init();
         gic400_enable_sys_timer(3); //todo peredelat'
 
-        //phisycal allocator
-        // todo for local test
-        uint64_t num_of_init_pages = init_pa_alloc();
-        uint64_t pages_after_init = get_num_of_free_pages();
 
         //init_task_initialization(up_of_stack0, up_of_stack1); We need another pointer to the stack in multiprocessor systems
 
         uint8_t init_res = kpgtbl_init(); // check
         w_ttbr1_el1((uint64_t)&kpgtbl);
         
+
+
         kpgtbl_debug_print((pagetable_t)&kpgtbl);
 
         /**
@@ -96,6 +106,8 @@ void configure_el3(uint64_t core_id){
         while(!__atomic_load_n(&global_initialization_is_completed, __ATOMIC_ACQUIRE)){
             asm volatile("nop");
         }
+        w_ttbr0_el3((uint64_t)&machine_pgtbl);
+        enable_mmu_el3();
 
         gic400_local_init();
         gic400_turn_oni();
@@ -111,8 +123,7 @@ void configure_el3(uint64_t core_id){
     // uint64_t stack1_map_res = mapva(up_of_stack1, up_of_stack1, pgtbl, NORMAL_NC);
 
 
-    volatile bool wait = false; // debug wait
-    while (wait);
+
 
 
     while(__atomic_load_n(&configuration_is_completed, __ATOMIC_ACQUIRE) != true){
@@ -121,6 +132,8 @@ void configure_el3(uint64_t core_id){
     __atomic_thread_fence(__ATOMIC_RELEASE);
 
     enable_mmu();
+
+
 
     asm volatile("isb");
     asm volatile("eret");// Jump to kernel_main, el1h 

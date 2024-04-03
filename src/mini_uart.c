@@ -84,11 +84,14 @@ void muart_init(void){
 void muart_send(char c){
 
     while (1){
-        uint32_t line_status = get32(AUX_MU_LSR_REG);
-        line_status &= 1 << 5;
+
+        uint32_t line_status = REGS_AUX->aux_mu_lsr_reg & (1 << 5);
         if(line_status) break;
+
     }
-    put32(AUX_MU_IO_REG,c);
+
+    REGS_AUX->aux_mu_io_reg = ((uint32_t) c);
+    // put32(AUX_MU_IO_REG,c);
 
 }
 

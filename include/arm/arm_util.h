@@ -126,6 +126,18 @@ static inline uint64_t r_sp_el1(void){
     return x;
 }
 
+static inline void enable_mmu_el3(void){
+    asm volatile(
+        "mrs x0, sctlr_el3\n"
+        "orr x0, x0, #(1 << 0)\n"
+        "msr sctlr_el1, x0\n"
+        "isb\n"
+        :
+        :
+        : "x0", "memory"
+    );    
+}
+
 static inline void enable_mmu(void) {
     asm volatile(
         "mrs x0, sctlr_el1\n"
@@ -154,6 +166,10 @@ static inline void w_tcr_el1(uint64_t x){
     asm volatile("msr tcr_el1, %0" : : "r" (x));
 }
 
+static inline void w_tcr_el3(uint64_t x){
+    asm volatile("msr tcr_el3, %0" : : "r" (x));
+}
+
 static inline uint64_t r_tcr_el1(void){
     uint64_t x;
     asm volatile("mrs %0, tcr_el1" : "=r" (x));
@@ -163,7 +179,9 @@ static inline uint64_t r_tcr_el1(void){
 static inline void w_mair_el1(uint64_t x){
     asm volatile("msr mair_el1, %0" : : "r" (x));
 }
-
+static inline void w_mair_el3(uint64_t x){
+    asm volatile("msr mair_el3, %0" : : "r" (x));
+}
 static inline uint64_t r_mair_el1(void){
     uint64_t x;
     asm volatile("mrs %0, mair_el1" : "=r" (x));
@@ -182,6 +200,10 @@ static inline uint64_t r_ttbr0_el1(void){
 
 static inline void w_ttbr1_el1(uint64_t x){
     asm volatile("msr ttbr1_el1, %0" : : "r" (x));
+}
+
+static inline void w_ttbr0_el3(uint64_t x){
+    asm volatile("msr ttbr0_el3, %0" : : "r" (x));
 }
 
 static inline uint64_t r_ttbr1_el1(void){

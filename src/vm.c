@@ -22,6 +22,7 @@
 // __attribute__((aligned(16))) volatile char kpgtbl[4096 * 4] = {0};
 
 __attribute__((aligned(0x1000))) volatile char kpgtbl[0x1000] = {0};
+__attribute__((aligned(0x1000))) volatile char machine_pgtbl[0x1000] = {0};
 
 // Return the address of the PTE in page table pagetable
 // that corresponds to virtual address va.  If alloc!=0,
@@ -80,13 +81,43 @@ uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharab
     (*pte) = page_str;
     return 0;
 }
-/**
- * 1) Мапим все ядро от kernel_end до 0 как mair_3 non_sharable
- * 2) Мапим локи как mair_2 inner_sharable
- * 3) Мапим девайсы как device_ngrne
-*/
+
+//identity mapping for code and variables
+//0xffff << 48 + addr mapping for devices
+uint8_t machine_pgtbl_init(void){
+    pagetable_t pgtbl = (pagetable_t) &machine_pgtbl;
+    // general all kernel code and variables
+    for(char * pointer = 0; pointer < PA_KERNEL_END; pointer += 0x1000){
+        uint64_t res = mapva((uint64_t) pointer, 
+                                            (uint64_t) pointer,
+                                            pgtbl,
+                                            NORMAL_NC, 
+                                            NON_SHAREABLE, true);
+        if(res < 0) return -1;
+    }
+    // shared kernel 
+    for(char * pointer = ((char *) PA_THREAD_SHARED_DATA_BEGIN); pointer < ((char *) PA_THREAD_SHARED_DATA_END); pointer += 0x1000){
+        uint64_t res = mapva((uint64_t) pointer,
+                                            (uint64_t) pointer, 
+                                            pgtbl,
+                                            NORMAL_NC,
+                                            INNER_SHAREABLE, true);
+        if(res < 0) return -2;
+    }
+    //devices
+    for(char * pointer = ((char *) MAIN_PERIPHERAL_BOT); pointer < ((char *) ARM_LOCAL_PERIPHERAL_TOP); pointer += 0x1000){
+        uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)),
+                                            (uint64_t) pointer, 
+                                            pgtbl,
+                                            DEVICE,
+                                            NON_SHAREABLE, true);
+        if(res < 0) return -3;
+    }
+    return 0;
+}
+
 uint8_t kpgtbl_init(void){
-        pagetable_t pgtbl = (pagetable_t) &kpgtbl;
+    pagetable_t pgtbl = (pagetable_t) &kpgtbl;
 
 
     // general all kernel code and variables
@@ -109,7 +140,7 @@ uint8_t kpgtbl_init(void){
         if(res < 0) return -2;
     }
     //devices
-    for(char * pointer = ((char *) ARM_LOCAL_PERIPHERAL_BOT); pointer < ((char *) MAIN_PERIPHERAL_TOP); pointer += 0x1000){
+    for(char * pointer = ((char *) MAIN_PERIPHERAL_BOT); pointer < ((char *) ARM_LOCAL_PERIPHERAL_TOP); pointer += 0x1000){
         uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)),
                                             (uint64_t) pointer, 
                                             pgtbl,
@@ -134,7 +165,7 @@ inline static void kpgtbl_debug_print_l(pagetable_t pgtbl, uint8_t level){
 
             pagetable_t next_pgtbl = (pagetable_t)addr;
             kpgtbl_debug_print_l(next_pgtbl, ++level);
-        }else if(level == 3 & ((*pgtbl_p) & VALID_DESCRIPTOR) == 1){
+        }else if(level == 3 && ((*pgtbl_p) & VALID_DESCRIPTOR) == 1){
             printf("\t\t\t");
             uint64_t pa = DAADDR(*pgtbl_p);
             printf("pa:%x \r\n", pa);
