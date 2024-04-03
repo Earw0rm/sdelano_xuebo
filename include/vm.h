@@ -48,13 +48,6 @@
 * Bits[6] 0 for only kernel access, 1 for user/kernel access.
 * Bits[4:2] The index to MAIR.
 * Bits[1:0] Specify the next level is a block/page, page table, or invalid.
-
-* Basic mmu configuration 
-* 1)Disable instruction cache.
-* 2)Disable data cache.
-* 3)The addressable region is 48 bit.
-* 4)The page granule size is 4KB.
-* 5)Not use address space ID (ASID).
 */
 #define VAKERN_BASE ((uint64_t) 0xffffull << 48)
 
@@ -92,7 +85,7 @@
 #define TCR_TG1_4K (2 << 30)
 
 //granule size 4kb bor ttbr1_el3
-#define TCR_TG_EL3 (0x0 << 14)
+#define TCR_TG_EL3 ((64 - 48) << 14)
 /**
  *  TCR_EL1.DS[59] 
  ***0b0: Bits[49:48] of translation descriptors are RES0.
@@ -133,7 +126,7 @@
 #define TCR_IPS (0x5ull << 32)
 
 #define TCR_VALUE (TCR_T0SZ | TCR_T1SZ | TCR_TG0_4K | TCR_TG1_4K )
-#define TCR_EL3_VALUE (0 | TCR_TG_EL3 | TCR_DS_EL3)
+#define TCR_EL3_VALUE (TCR_TG_EL3 | TCR_TG_EL3 | TCR_DS_EL3)
 
 
 /* part of MAIR_EL1
