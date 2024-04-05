@@ -82,46 +82,13 @@ uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharab
     return 0;
 }
 
-//identity mapping for code and variables
-//0xffff << 48 + addr mapping for devices
-uint8_t machine_pgtbl_init(void){
-    pagetable_t pgtbl = (pagetable_t) &machine_pgtbl;
-    // general all kernel code and variables
-    for(char * pointer = 0; pointer < PA_KERNEL_END; pointer += 0x1000){
-        uint64_t res = mapva((uint64_t) pointer, 
-                                            (uint64_t) pointer,
-                                            pgtbl,
-                                            NORMAL_NC, 
-                                            NON_SHAREABLE, true);
-        if(res < 0) return -1;
-    }
-    // shared kernel 
-    for(char * pointer = ((char *) PA_THREAD_SHARED_DATA_BEGIN); pointer < ((char *) PA_THREAD_SHARED_DATA_END); pointer += 0x1000){
-        uint64_t res = mapva((uint64_t) pointer,
-                                            (uint64_t) pointer, 
-                                            pgtbl,
-                                            NORMAL_NC,
-                                            INNER_SHAREABLE, true);
-        if(res < 0) return -2;
-    }
-    //devices
-    for(char * pointer = ((char *) MAIN_PERIPHERAL_BOT); pointer < ((char *) ARM_LOCAL_PERIPHERAL_TOP); pointer += 0x1000){
-        uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)),
-                                            (uint64_t) pointer, 
-                                            pgtbl,
-                                            DEVICE,
-                                            NON_SHAREABLE, true);
-        if(res < 0) return -3;
-    }
-    return 0;
-}
+
 
 uint8_t kpgtbl_init(void){
     pagetable_t pgtbl = (pagetable_t) &kpgtbl;
 
-
-    // general all kernel code and variables
-    for(char * pointer = 0; pointer < PA_KERNEL_END; pointer += 0x1000){
+    // all general purpose memory
+    for(char * pointer = 0; pointer < ((char *) VC_BASE_BOT); pointer += 0x1000){
         uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)), 
                                             (uint64_t) pointer,
                                             pgtbl,
@@ -130,6 +97,26 @@ uint8_t kpgtbl_init(void){
         if(res < 0) return -1;
     }
 
+    for(char * pointer = ((char *) VC_BASE_TOP); pointer < ((char *) SDRAM_TOP); pointer += 0x1000){
+        uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)), 
+                                            (uint64_t) pointer,
+                                            pgtbl,
+                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
+                                            NON_SHAREABLE, true);
+        if(res < 0) return -1;
+    }
+
+    for(char * pointer = ((char *) SDRAM_BOT); pointer < ((char *) PASTOP); pointer += 0x1000){
+        uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)), 
+                                            (uint64_t) pointer,
+                                            pgtbl,
+                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
+                                            NON_SHAREABLE, true);
+        if(res < 0) return -1;
+    }
+
+
+
     // shared kernel 
     for(char * pointer = ((char *) PA_THREAD_SHARED_DATA_BEGIN); pointer < ((char *) PA_THREAD_SHARED_DATA_END); pointer += 0x1000){
         uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)),
@@ -139,6 +126,8 @@ uint8_t kpgtbl_init(void){
                                             INNER_SHAREABLE, true);
         if(res < 0) return -2;
     }
+
+    
     //devices
     for(char * pointer = ((char *) MAIN_PERIPHERAL_BOT); pointer < ((char *) ARM_LOCAL_PERIPHERAL_TOP); pointer += 0x1000){
         uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)),
@@ -151,14 +140,21 @@ uint8_t kpgtbl_init(void){
     return 0;
 }
 
-inline static void kpgtbl_debug_print_l(pagetable_t pgtbl, uint8_t level){
 
-    for(uint8_t i = 0; (i < level && level != 3); ++i){
+// kalling only inside kernel. 
+// Pagetables can contain physical adress link on next pgtbl
+// SO, if address starts from 0x0000, then we change address to start with 0xffff
+inline static void kpgtbl_debug_print_l(pagetable_t pgtbl, uint8_t level){
+    
+    pgtbl = (uint64_t *) (((uint64_t)pgtbl) | VAKERN_BASE); // if mmu enabled...
+
+
+    for(uint8_t i = 0; (i < level && level < 3); ++i){
         printf("\t");
     }
 
     for(pagetable_t pgtbl_p = pgtbl; pgtbl_p < (pgtbl + 512); ++pgtbl_p){
-        
+
         if(level != 3 && (((*pgtbl_p) & VALID_DESCRIPTOR) == 1)){
             uint64_t addr = DAADDR(*pgtbl_p);
             printf("addr:%x \r\n", addr);
@@ -168,7 +164,7 @@ inline static void kpgtbl_debug_print_l(pagetable_t pgtbl, uint8_t level){
         }else if(level == 3 && ((*pgtbl_p) & VALID_DESCRIPTOR) == 1){
             printf("\t\t\t");
             uint64_t pa = DAADDR(*pgtbl_p);
-            printf("pa:%x \r\n", pa);
+            printf("pa:%x \r\n full_pte:%x \r\n", pa, (*pgtbl_p));
         }
 
     }

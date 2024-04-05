@@ -117,9 +117,16 @@ fiq_invalid_el1t:
 error_invalid_el1t:
 	handle_invalid_entry ERROR_INVALID_EL1t
 
-sync_invalid_el1h:
-	mrs x0, far_el1
+sync_invalid_el1h:	 
 	b sync_invalid_el1h // for debug purpose
+
+//sync_el1h:
+//	kernel_entry
+//	mrs x0, far_el1
+//	mrs x1, esr_el1
+//	mrs x2, elr_el1
+//	b handle_sync_el1h
+//	kernel_exit
 
 fiq_invalid_el1h:
 	handle_invalid_entry FIQ_INVALID_EL1h

@@ -100,3 +100,16 @@ void handle_el0_sync(uint64_t x0, uint64_t x1,
             break;
     }
 }
+void handle_el1h_sync(uint64_t far_el1, uint64_t esr_el1, uint64_t elr_el1){
+    uint64_t syndrome = (esr_el1 & EC_MASK);
+
+    switch (syndrome)
+    {
+    case EC_DATA_ABORT: //big crunch
+
+        break;
+    
+    default:
+        break; // big fuckin trap
+    }
+}
