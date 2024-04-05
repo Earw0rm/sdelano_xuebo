@@ -4,7 +4,6 @@
 #include "vm.h"
 #include "common.h"
 
-extern bool configuration_is_completed;
 
 
 
