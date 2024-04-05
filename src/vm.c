@@ -164,7 +164,7 @@ inline static void kpgtbl_debug_print_l(pagetable_t pgtbl, uint8_t level){
         }else if(level == 3 && ((*pgtbl_p) & VALID_DESCRIPTOR) == 1){
             printf("\t\t\t");
             uint64_t pa = DAADDR(*pgtbl_p);
-            printf("pa:%x \r\n full_pte:%x \r\n", pa, (*pgtbl_p));
+            printf("pa:%x \t full_pte:%x \r\n", pa, (*pgtbl_p));
         }
 
     }
