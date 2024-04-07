@@ -7,7 +7,7 @@ BOOTMNT ?=/media/foer/bootfs
 ARMGNU ?=aarch64-linux-gnu
 
 COPS =-Wall -nostdlib -nostartfiles -ffreestanding \
-	-Iinclude -mgeneral-regs-only -g -mno-outline-atomics -lgcc
+	-Iinclude -mgeneral-regs-only -g -mno-outline-atomics -fno-omit-frame-pointer -lgcc
 
 ASMOPS =-Iinclude
 

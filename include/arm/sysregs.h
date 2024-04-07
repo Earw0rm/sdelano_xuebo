@@ -62,6 +62,6 @@
 // ***************************************
 #define ESR_EL1_REASON_SHIFT      26
 #define ESR_EL1_REASON_SVC (0b010101U << 26)
-
+#define ESR_EL1_REASON_
 
 #endif 

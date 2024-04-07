@@ -32,7 +32,7 @@ void configure_el1(void){
     
     if(core_id == 0){
         muart_init();
-        init_printf(0, (VAKERN_BASE | ((uint64_t ) &unsafe_putc))); // temp unsafe
+        init_printf(0, (VAKERN_BASE | ((uint64_t ) &putc))); // temp unsafe
         
         gic400_global_init();
         sys_timer_init();
@@ -40,7 +40,6 @@ void configure_el1(void){
 
         const bool completed = true;
        __atomic_store(&global_initialization_is_completed_el1, &completed, __ATOMIC_RELEASE);
-        // kpgtbl_debug_print(&kpgtbl);
     }else{
         while(!__atomic_load_n(&global_initialization_is_completed_el1, __ATOMIC_ACQUIRE)){
             asm volatile("nop");
@@ -76,7 +75,7 @@ void configure_el3(uint64_t core_id){
     if(core_id == 0){
         
         uint64_t num_of_init_pages = init_pa_alloc();
-        uint64_t pages_after_init = get_num_of_free_pages();
+
         __atomic_thread_fence(__ATOMIC_ACQ_REL);
 
         w_hcr_el2(HCR_VALUE);
@@ -101,7 +100,7 @@ void configure_el3(uint64_t core_id){
 
     bool wait = true;
     while(wait);
-
+    
     asm volatile("isb");
     asm volatile("eret");// Jump to kernel_main, el1h 
     while(1);

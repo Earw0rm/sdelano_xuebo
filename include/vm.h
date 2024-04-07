@@ -203,14 +203,11 @@ typedef enum {
 // as inner shareable or outer shareable, or both, means that the location is shared with other
 // observers, for example, a GPU or DMA device might be considered another observer. In the
 // same way, the division between inner and outer is IMPLEMENTATION DEFINED.
-// #define NON_SHAREABLE   (0b00 << 6)
-// #define OUTER_SHAREABLE (0b10 << 6)
-// #define INNER_SHAREABLE (0b11 << 6)
 
 typedef enum {
-    NON_SHAREABLE = 0b00 << 6,
-    OUTER_SHAREABLE = 0b10 << 6,
-    INNER_SHAREABLE = 0b11 << 6
+    NON_SHAREABLE = 0b00 << 8,
+    OUTER_SHAREABLE = 0b10 << 8,
+    INNER_SHAREABLE = 0b11 << 8
 } sharability_flag;
 
 /**
