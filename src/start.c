@@ -29,6 +29,7 @@ static bool global_initialization_is_completed_el1 = false;
 
 void configure_el1(void){
     uint64_t core_id = get_processor_id();
+    
     if(core_id == 0){
         muart_init();
         init_printf(0, (VAKERN_BASE | ((uint64_t ) &unsafe_putc))); // temp unsafe
@@ -39,7 +40,7 @@ void configure_el1(void){
 
         const bool completed = true;
        __atomic_store(&global_initialization_is_completed_el1, &completed, __ATOMIC_RELEASE);
-        kpgtbl_debug_print(&kpgtbl);
+        // kpgtbl_debug_print(&kpgtbl);
     }else{
         while(!__atomic_load_n(&global_initialization_is_completed_el1, __ATOMIC_ACQUIRE)){
             asm volatile("nop");
@@ -58,6 +59,8 @@ void configure_el1(void){
 }
 
 void configure_el3(uint64_t core_id){
+
+
     w_vbar_el3((uint64_t) &el3_vec);
     w_sctlr_el1(SCTLR_VALUE_MMU_DISABLED);
     w_tcr_el1(TCR_VALUE);
@@ -74,12 +77,16 @@ void configure_el3(uint64_t core_id){
         
         uint64_t num_of_init_pages = init_pa_alloc();
         uint64_t pages_after_init = get_num_of_free_pages();
+        __atomic_thread_fence(__ATOMIC_ACQ_REL);
 
         w_hcr_el2(HCR_VALUE);
         w_scr_el3(SCR_VALUE);
         w_spsr_el3(SPSR_VALUE);
 
+        
+  
         uint8_t init_res = kpgtbl_init(); // check
+
 
         const bool completed = true;
        __atomic_store(&global_initialization_is_completed_el3, &completed, __ATOMIC_RELEASE);
@@ -91,6 +98,10 @@ void configure_el3(uint64_t core_id){
 
     w_ttbr1_el1((uint64_t)&kpgtbl);
     enable_mmu();
+
+    bool wait = true;
+    while(wait);
+
     asm volatile("isb");
     asm volatile("eret");// Jump to kernel_main, el1h 
     while(1);

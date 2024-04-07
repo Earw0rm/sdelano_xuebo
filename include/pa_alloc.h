@@ -24,7 +24,7 @@
 
 
 #define PA_KERNEL_END (&_end_of_kernel_addr)
-#define TERMINAL_PAGE (PA_KERNEL_END + 1*PAGE_SIZE)
+#define TERMINAL_PAGE (PA_KERNEL_END + 1*PAGE_SIZE) // beaches TYPES!!!
 #define KERNEL_GUARD_PAGE (TERMINAL_PAGE)
 
 #define PA_THREAD_SHARED_DATA_BEGIN (&_thread_shared_data_begin)
@@ -43,7 +43,7 @@ struct run{
 extern struct run * freepages;
 
 
-bool zero_range(uint64_t * astart, uint64_t size);
+bool zero_range(char * astart, uint64_t size);
 uint64_t init_pa_alloc(void);
 uint64_t get_num_of_free_pages(void);
 uint64_t get_page_unsafe(void);

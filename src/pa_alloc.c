@@ -15,12 +15,14 @@ static struct speenlock pa_alloc_lock = {
 // each page it is pointer to LOWER address.
 struct run * freepages = ((struct run*) TERMINAL_PAGE);
 
+
+
 //size in word.
-bool zero_range(uint64_t * astart, uint64_t size){
+bool zero_range(char * astart, uint64_t size){
 
     if(size == 0) return false;
 
-    for(;size != 0; --size, ++astart){
+    for(; size != 0; --size, ++astart){
         *(astart) = 0;
     }
 
@@ -48,34 +50,34 @@ uint64_t init_pa_alloc(void){
     uint64_t * sdram_range_3_end = ((uint64_t *) PASTOP);
 
 
-
-
-    for(;sdram_range_1 < sdram_range_1_end; sdram_range_1 += PAGE_SIZE){
+    for(;sdram_range_1 < sdram_range_1_end; sdram_range_1 += (PAGE_SIZE / 8)){
         struct run * page = (struct run *) sdram_range_1;
         page->next = freepages;
         freepages = page;
         ++alloc_pages_counter;
     }
 
-    for(;sdram_range_2 < sdram_range_2_end; sdram_range_2 += PAGE_SIZE){
+    for(;sdram_range_2 < sdram_range_2_end; sdram_range_2 += (PAGE_SIZE / 8)){
         struct run * page = (struct run *) sdram_range_2;
         page->next = freepages;
         freepages = page;
         ++alloc_pages_counter;
     }
-    for(;sdram_range_3 < sdram_range_3_end; sdram_range_3 += PAGE_SIZE){
+
+    for(;sdram_range_3 < sdram_range_3_end; sdram_range_3 += (PAGE_SIZE / 8)){
         struct run * page = (struct run *) sdram_range_3;
         page->next = freepages;
         freepages = page;
         ++alloc_pages_counter;
     }
+
     return alloc_pages_counter;
 }
 
 uint64_t get_num_of_free_pages(void){
-    struct run * terminal_page = ((struct run*) TERMINAL_PAGE); 
+
     uint64_t counter = 0;
-    for(struct run * cpage = freepages; cpage != terminal_page; cpage = cpage->next){
+    for(struct run * cpage = freepages; cpage != ((struct run*) TERMINAL_PAGE); cpage = cpage->next){
             ++counter;
 
             if((((uint64_t)(&cpage)) & 0xfffull) != 0){

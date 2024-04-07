@@ -22,7 +22,6 @@
 // __attribute__((aligned(16))) volatile char kpgtbl[4096 * 4] = {0};
 
 __attribute__((aligned(0x1000))) volatile char kpgtbl[0x1000] = {0};
-__attribute__((aligned(0x1000))) volatile char machine_pgtbl[0x1000] = {0};
 
 // Return the address of the PTE in page table pagetable
 // that corresponds to virtual address va.  If alloc!=0,
@@ -34,22 +33,22 @@ pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc, bool unsafe){
 
 
         uint64_t pgtbl_index = VA_PTBL_IND(va, level);
-        pte_t *pte = &pagetable[pgtbl_index];
+        pte_t * pte = &pagetable[pgtbl_index];
 
         if(((*pte) & VALID_DESCRIPTOR) == 1){ // mean that PTE is valid
             pagetable = (pagetable_t)DAADDR((uint64_t)*pte);
-
         }else{
-            if(!alloc) return 0;
+            if(!alloc) return (pte_t *) 0x0;
             
             uint64_t page;
             
             if(unsafe) page = get_page_unsafe();
             else page = get_page();
 
-            zero_range((uint64_t *) page, PAGE_SIZE);
+            if(page == 0 || ((page & 0xfffull) != 0)) return (pte_t *) 0x1; // mean that they are not page aligned or something
+
+            zero_range((char *) page, PAGE_SIZE);
             
-            if((page & 0xfffull) != 0) return 0; // mean that they are not page aligned
 
             *pte = (page | TABLE_DESCRIPTOR | VALID_DESCRIPTOR);
             pagetable = (pagetable_t)page;
@@ -63,14 +62,14 @@ pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc, bool unsafe){
 
 
 // address round down before map. Support only per page mapping
-uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharability_flag sflag, bool unsafe_alloc){
+int8_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharability_flag sflag, bool unsafe_alloc){
     va = PGROUNDDOWN(va);
     pa = PGROUNDDOWN(pa);
 
-    if((va & 0xfffull) != 0 || (pa & 0xfffull) != 0) return -1;
+    if((va & 0xfffull) != 0 || (pa & 0xfffull) != 0) return -3;
 
     pte_t* pte =  walk(pgtbl, va, true, unsafe_alloc);
-    if(pte == 0){
+    if(pte == (pte_t *) 0x0 || pte == (pte_t *) 0x1){
         return -1;
     }
     
@@ -84,42 +83,22 @@ uint64_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharab
 
 
 
-uint8_t kpgtbl_init(void){
+int8_t kpgtbl_init(void){
     pagetable_t pgtbl = (pagetable_t) &kpgtbl;
 
-    // all general purpose memory
-    for(char * pointer = 0; pointer < ((char *) VC_BASE_BOT); pointer += 0x1000){
-        uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)), 
+    //kernel data
+    for(char * pointer = 0; pointer < ((char *) PA_KERNEL_END); pointer += 0x1000){
+        int8_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)), 
                                             (uint64_t) pointer,
                                             pgtbl,
                                             NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
                                             NON_SHAREABLE, true);
         if(res < 0) return -1;
     }
-
-    for(char * pointer = ((char *) VC_BASE_TOP); pointer < ((char *) SDRAM_TOP); pointer += 0x1000){
-        uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)), 
-                                            (uint64_t) pointer,
-                                            pgtbl,
-                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
-                                            NON_SHAREABLE, true);
-        if(res < 0) return -1;
-    }
-
-    for(char * pointer = ((char *) SDRAM_BOT); pointer < ((char *) PASTOP); pointer += 0x1000){
-        uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)), 
-                                            (uint64_t) pointer,
-                                            pgtbl,
-                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
-                                            NON_SHAREABLE, true);
-        if(res < 0) return -1;
-    }
-
-
 
     // shared kernel 
     for(char * pointer = ((char *) PA_THREAD_SHARED_DATA_BEGIN); pointer < ((char *) PA_THREAD_SHARED_DATA_END); pointer += 0x1000){
-        uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)),
+        int64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)),
                                             (uint64_t) pointer, 
                                             pgtbl,
                                             NORMAL_NC,
@@ -130,7 +109,7 @@ uint8_t kpgtbl_init(void){
     
     //devices
     for(char * pointer = ((char *) MAIN_PERIPHERAL_BOT); pointer < ((char *) ARM_LOCAL_PERIPHERAL_TOP); pointer += 0x1000){
-        uint64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)),
+        int64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)),
                                             (uint64_t) pointer, 
                                             pgtbl,
                                             DEVICE,

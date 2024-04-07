@@ -118,7 +118,9 @@ error_invalid_el1t:
 	handle_invalid_entry ERROR_INVALID_EL1t
 
 sync_invalid_el1h:	 
-	b sync_invalid_el1h // for debug purpose
+ 	mrs x15, far_el1
+w:
+	b w // for debug purpose
 
 //sync_el1h:
 //	kernel_entry
