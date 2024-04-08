@@ -96,12 +96,13 @@ int8_t kpgtbl_init(void){
         if(res < 0) return -1;
     }
 
+    // whats type of memory we need hire? 
     // shared kernel 
     for(char * pointer = ((char *) PA_THREAD_SHARED_DATA_BEGIN); pointer < ((char *) PA_THREAD_SHARED_DATA_END); pointer += 0x1000){
         int64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)),
                                             (uint64_t) pointer, 
                                             pgtbl,
-                                            NORMAL_NC,
+                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_NON_TRAINSIENT,
                                             INNER_SHAREABLE, true);
         if(res < 0) return -2;
     }

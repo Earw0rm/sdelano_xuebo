@@ -47,6 +47,8 @@ struct AuxRegs{
     reg32 aux_mu_baud_reg;
 };
 
+#define TESTREGS_AUX ((struct AuxRegs *)(TESTPBASE+0x00215000))
+// #define REGS_AUX TESTREGS_AUX
 #define REGS_AUX ((struct AuxRegs *)(PBASE+0x00215000))
 
 // txd1 & rxd1 это auxilary I/O. На gpio надо включить что бы mini uart работал. 

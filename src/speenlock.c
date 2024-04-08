@@ -15,10 +15,9 @@ void acquire(struct speenlock * lock){
     disable_irq();
     
 
-    // while( != 0){
-    //     asm volatile("nop");
-    // }
-    __atomic_test_and_set(&(lock->locked), __ATOMIC_ACQ_REL);
+    while(__atomic_test_and_set(&(lock->locked), __ATOMIC_ACQUIRE) != 0){
+        asm volatile("nop");
+    }
     lock->cpu_num = get_processor_id();
     lock->name = "trying_lock";
 }
@@ -33,7 +32,7 @@ void acquire(struct speenlock * lock){
 void release(struct speenlock *lock){
     lock->cpu_num = -1;
     
-    __atomic_clear(&(lock->locked), __ATOMIC_ACQ_REL);
+    __atomic_clear(&(lock->locked), __ATOMIC_RELEASE);
     
     enable_irq();
 }

@@ -20,6 +20,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 #include "printf.h"
+#include "speenlock.h"
+
+__attribute__((section(".data.thread_shared")))
+static struct speenlock printflock = {
+    .cpu_num = -1,
+    .locked = 0,
+    .name = "clear"
+};
 
 typedef void (*putcf) (void*,char);
 static putcf stdout_putf; // this is our putc function
@@ -128,18 +136,11 @@ static void putchw(void* putp,putcf putf,int n, char z, char* bf)
 void tfp_format(void* putp,putcf putf,char *fmt, va_list va)
     {
     char bf[12];
-
     char ch;
-
-//tfp_format(stdout_putp,stdout_putf,fmt,va);
 
     while ((ch=*(fmt++))) {
         if (ch!='%')
             putf(putp,ch); 
-// putc(0, ch(any character))
-// void putc(void* p, char c){
-//     muart_send(c);
-// }
         else {
             char lz=0;
 #ifdef  PRINTF_LONG_SUPPORT
@@ -217,11 +218,13 @@ void init_printf(void* putp, void (*putf) (void*,char))
 
 void tfp_printf(char *fmt, ...)
     {
+//this
+    acquire(&printflock);
     va_list va;
     va_start(va,fmt);
-    //tfp_format(void* putp,putcf putf,char *fmt, va_list va)
     tfp_format(stdout_putp,stdout_putf,fmt,va);
     va_end(va);
+    release(&printflock);
     }
 
 static void putcp(void* p,char c)

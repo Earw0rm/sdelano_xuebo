@@ -14,10 +14,18 @@ ASMOPS =-Iinclude
 BUILD_DIR=build
 SRC_DIR=src
 
+
+# (=)  => recursive assigment.
+# (:=) => compile time assigment. After run, first we gonna do is define this 
+# (?=) => if not defined then 
+
+CORE ?=0
+COREVAL := $(shell echo $$(($(CORE) + 3)))
+
 all: kernel8.img
 
 debug: kernel8.elf
-	gdb-multiarch build/kernel8.elf -ex "target extended-remote localhost:3333"
+	gdb-multiarch build/kernel8.elf -ex "set architecture aarch64" -ex "target extended-remote localhost:333$(COREVAL)"
 
 ocd:
 	openocd  -f rpi4_jlink.cfg

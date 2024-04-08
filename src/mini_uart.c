@@ -118,9 +118,9 @@ void muart_send_string(char* str){
 
 
 void putc(void* p, char c){
-    acquire(&uart_lock);
+    // acquire(&uart_lock);
     muart_send(c);
-    release(&uart_lock);
+    // release(&uart_lock);
 }
 
 void unsafe_putc(void* p, char c){

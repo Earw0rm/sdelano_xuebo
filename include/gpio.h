@@ -94,6 +94,8 @@ struct GpioRegs{
     reg32 pup_pdwn_cntrl[4];
 };
 
+#define TESTGPIO_REGS ((struct GpioRegs *) (TESTPBASE + 0x00200000))
+// #define GPIO_REGS TESTGPIO_REGS
 #define GPIO_REGS ((struct GpioRegs *) (PBASE + 0x00200000))
 
 

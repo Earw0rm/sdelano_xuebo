@@ -7,6 +7,12 @@
  * 
  * 
  * B2.9.2 Exclusive access instructions and Shareable memory locations
+ * 
+ * Because implementations can choose which memory types are treated as Non-cacheable, the only memory types for which it is architecturally guaranteed that a global Exclusives monitor is implemented are:
+ * 1) Inner Shareable, Inner Write-Back, Outer Write-Back Normal memory with Read allocation hints and Write allocation hints and not transient. 
+ * 2) Outer Shareable, Inner Write-Back, Outer Write-Back Normal memory with Read allocation hints and Write allocation hints and not transient.
+ * 
+ * 
 */
 
 
