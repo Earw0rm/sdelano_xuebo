@@ -216,9 +216,15 @@ void init_printf(void* putp, void (*putf) (void*,char))
     stdout_putp=putp;
     }
 
+void utfp_printf(char *fmt, ...){
+    va_list va;
+    va_start(va,fmt);
+    tfp_format(stdout_putp,stdout_putf,fmt,va);
+    va_end(va);
+}
+
 void tfp_printf(char *fmt, ...)
     {
-//this
     acquire(&printflock);
     va_list va;
     va_start(va,fmt);

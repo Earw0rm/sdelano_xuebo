@@ -5,15 +5,16 @@
 
 // ***************************************
 // Exceptiom vector table, Page 5357 of AArch64-Reference-Manual (A-profile architecture reference manual).    
-// align 7 тк каждый уровень исключений находится на 0x80 границе
+// align 7 sinse each level of exceptions in 0x80 border
 // esr_el1 => exception syndrome register. 
-// elr_el1 => для синхронных исключений. Адрес инструкции которая вызвала исключение
+// elr_el1 => exception link register
 // ***************************************
 .macro ventry label
 .align 7
     b \label
 .endm
 
+//in this context, sp it is KERNEL stack. Mean that if kernel in h regime, then sp is sp_el1.
 .macro kernel_entry
 	sub	sp, sp,   #256
 	stp	x0, x1,   [sp, #16 * 0]

@@ -1,6 +1,5 @@
 #include "mini_uart.h"
 #include "common.h"
-#include "utils.h"
 #include "gpio.h"
 #include "speenlock.h"
 
@@ -91,22 +90,21 @@ void muart_send(char c){
     }
 
     REGS_AUX->aux_mu_io_reg = ((uint32_t) c);
-    // put32(AUX_MU_IO_REG,c);
 
 }
 
-char muart_recv(void){
-    while (1){
-        uint32_t line_status = get32(AUX_MU_LSR_REG);
-        line_status &= 1;
-        if(line_status) break;
-    }
+// char muart_recv(void){
+//     while (1){
+//         uint32_t line_status = get32(AUX_MU_LSR_REG);
+//         line_status &= 1;
+//         if(line_status) break;
+//     }
 
-    uint32_t res = get32(AUX_MU_IO_REG);
-    res &= 0xff;
+//     uint32_t res = get32(AUX_MU_IO_REG);
+//     res &= 0xff;
 
-    return res;
-}
+//     return res;
+// }
 
 void muart_send_string(char* str){
     for(int i = 0; str[i] != '\0'; i ++){
@@ -118,9 +116,7 @@ void muart_send_string(char* str){
 
 
 void putc(void* p, char c){
-    // acquire(&uart_lock);
     muart_send(c);
-    // release(&uart_lock);
 }
 
 void unsafe_putc(void* p, char c){
