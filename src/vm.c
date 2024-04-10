@@ -21,7 +21,7 @@
 // 64KB               | 48 bits or 52 bits | TTBR_ELx[47:16]                | OA[47:16]
 // __attribute__((aligned(16))) volatile char kpgtbl[4096 * 4] = {0};
 
-__attribute__((aligned(0x1000))) volatile char kpgtbl[0x1000] = {0};
+
 
 // Return the address of the PTE in page table pagetable
 // that corresponds to virtual address va.  If alloc!=0,
@@ -83,8 +83,8 @@ int8_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharabil
 
 
 
-int8_t kpgtbl_init(void){
-    pagetable_t pgtbl = (pagetable_t) &kpgtbl;
+int8_t kpgtbl_init(pagetable_t pgtbl){
+    // pagetable_t pgtbl = (pagetable_t) &kpgtbl;
 
     //kernel data
     for(char * pointer = 0; pointer < ((char *) PA_KERNEL_END); pointer += 0x1000){

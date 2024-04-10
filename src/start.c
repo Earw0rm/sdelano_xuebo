@@ -13,7 +13,10 @@ __attribute__((aligned(16)))
 volatile char init_stack3[0x4000]; 
 
 __attribute__((aligned(16)))
-volatile char kernel_stack1[0x4000];
+volatile char ksched_stack[0x4000];
+
+__attribute__((aligned(0x1000))) 
+volatile char ksched_pgtbl[0x4000] = {0};
 
 extern char vectors[]; // exception.S
 extern char el3_vec[]; // exception.S
@@ -36,8 +39,10 @@ void configure_el1(void){
         init_printf(0, (VAKERN_BASE | ((uint64_t ) &putc))); // temp unsafe
         
         gic400_global_init();
-        sys_timer_init();
-        // gic400_enable_sys_timer(3); //todo peredelat'
+
+        // todo change to local timer 
+        // sys_timer_init();
+        // gic400_enable_sys_timer(3); 
 
        __atomic_store(&global_initialization_is_completed_el1, &completed, __ATOMIC_RELEASE);
     }else{
@@ -75,14 +80,12 @@ void configure_el3(uint64_t core_id){
     //stuff before interrupt
     w_spsr_el3(SPSR_VALUE);
 
-    uint64_t stack1_addr = (uint64_t) &kernel_stack1[((core_id + 1) << 12)];
+    uint64_t stack1_addr = (uint64_t) &ksched_stack[((core_id + 1) << 12)];
     w_sp_el1(VAKERN_BASE | stack1_addr);
 
     if(core_id == 0){
 
         uint64_t num_of_init_pages = init_pa_alloc();
-        __atomic_thread_fence(__ATOMIC_ACQ_REL);
-        uint8_t init_res = kpgtbl_init(); // check
 
        __atomic_store(&global_initialization_is_completed_el3, &completed, __ATOMIC_RELEASE);
     }else{
@@ -90,12 +93,13 @@ void configure_el3(uint64_t core_id){
             asm volatile("nop");
         }
     }
-
-    w_ttbr1_el1((uint64_t)&kpgtbl);
+    
+    uint8_t init_res = kpgtbl_init(&ksched_pgtbl[((core_id + 1) << 12)]); // address dependency with init_pa_alloc();
+    w_ttbr1_el1((uint64_t)&ksched_pgtbl[((core_id + 1) << 12)]);
     enable_mmu();
     
     asm volatile("isb");
-    asm volatile("eret");// Jump to kernel_main, el1h 
+    asm volatile("eret");// Jump to configure_el1, el1h 
     while(1);
 }
 

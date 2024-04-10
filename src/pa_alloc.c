@@ -98,13 +98,17 @@ uint64_t get_page_unsafe(void){
 }
 
 uint64_t get_page(void){
-    //lock TODO
+    acquire(&pa_alloc_lock);
     struct run * page = freepages;
+    
     if(page == ((struct run*) TERMINAL_PAGE)){
+        release(&pa_alloc_lock);
         return 0;
     }
+
     freepages = page->next;
-    //unlock
+    release(&pa_alloc_lock);
+
     return ((uint64_t) page);
 
 }
@@ -115,11 +119,13 @@ bool free_page(uint64_t paddr){
     if(paddr == 0){
         return false;
     }        
-    //lock
+
+    release(&pa_alloc_lock);
     struct run * page = ((struct run *) paddr);
     page->next = freepages;
     freepages = page;
-    //unlock
+    release(&pa_alloc_lock);
+
     return true;
 
 }

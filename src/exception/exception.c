@@ -38,6 +38,7 @@ inline static void _eoi(uint32_t interrupt_id){
     eoi |= interrupt_id;
     GIC400_INTERFACES->eoi = eoi;
 }
+
 // this functiion can be call only after init_printf();
 void show_invalid_entry_message(uint32_t ex_type, uint32_t esr_el1, uint32_t elr_el1){
     const char * err_msg = (entry_error_messages[ex_type]);

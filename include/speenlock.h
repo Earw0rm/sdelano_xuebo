@@ -19,7 +19,7 @@
 struct speenlock{    
     char locked;
     char *name;
-    uint8_t cpu_num;
+    int8_t cpu_num;
 //    struct cpu *cpu; // currenct cpu that holding lock
 };
 
