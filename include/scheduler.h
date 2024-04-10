@@ -3,6 +3,8 @@
 #include "common.h"
 
 
+
+
 typedef enum {
     RUNABLE,
     RUNNING,
@@ -74,14 +76,21 @@ struct task{
 
     task_state state;
     uint64_t preempt_count;
+
+    bool pure;
 };
 
 struct cpu{
-    struct task;
+    struct task current_task;
 };
 
 void schedule(void);
-struct task create_task(void);
+struct cpu * my_cpu(void);
+void switch_to(struct task task);
+
+
+#define EL0_INTR_ON (0xf | (~0xf << 6))
+struct task create_task(uint8_t (*main)(void));
 
 
 #endif

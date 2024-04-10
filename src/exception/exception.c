@@ -73,7 +73,7 @@ void handle_irq(void){
         case SYS_TIMER_3:
             sys_timer_recharge(3, SCHEDULER_RECHARGE_TIME);
             _eoi(interrupt_id);
-            timer_tick();
+            // timer_tick();
             break;
         default:
             break;
