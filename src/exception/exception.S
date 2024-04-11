@@ -220,10 +220,7 @@ el3_vec:
 
 el3_panic:
 	b el3_panic
-//    mrs x0, esr_el3
-//    mrs x1, elr_el3	
-//	bl el3_panic_msg
-//	b err_hang
+
 
 
 
@@ -267,6 +264,7 @@ el3_panic:
 	mrs x0, esr_el1
 	mrs x1, far_el1 
 	stp x0, x1, [x2, #16 * 17]
+.endm
 
 .macro restore_uctx
 	ldr x0, =LAYOUT_MY_CPU
@@ -290,18 +288,23 @@ el3_panic:
 	ldr x1, [x0, #248] // 16 * 15 + 8
 	msr sp_el0, x1 
 
-	ldr x1, [x0, #256] // 16 * 15 + 8
+	ldr x1, [x0, #256] // 16 * 15 + 16
 	msr elr_el1, x1
 
-	ldr x1, [x0, #264] // 16 * 15 + 8
+	ldr x1, [x0, #264] // 16 * 15 + 24
 	msr spsr_el1, x1
 
-	ldr x1, [x0, #272] // 16 * 15 + 8
+	ldr x1, [x0, #272] // 16 * 15 + 32
 	msr esr_el1, x1
 
-	ldr x1, [x0, #280] // 16 * 15 + 8
+	ldr x1, [x0, #280] // 16 * 15 + 40
 	msr far_el1, x1
 
 	ldr x1, [x0, #8]
 	ldr x0, [x0, #0]
+.endm
+
+.globl restore_and_ret
+restore_and_ret:
+	restore_uctx
 	eret

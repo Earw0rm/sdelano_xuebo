@@ -13,11 +13,18 @@ static struct speenlock tasks_lock = {
     .name = "clear"
 };
 
+extern void restore_and_ret(void); // exception.S
+
 //current task live hire 
 struct cpu cpus[4]           = {0};
 //acquire lock for changes this 
 static uint64_t tasks_count  =  0 ;
 static struct task tasks[64] = {0};
+
+//completed tasks
+static uint64_t tasks_buffer_count  =  0 ;
+static struct task task_buffer[64]  = {0};
+
 
 // return 0 if tasks[] has 0 task
 struct task get_last(void){
@@ -41,13 +48,20 @@ struct cpu * my_cpu(void){
 
 void schedule(void){
     struct task task = get_last();
-    if(!task.pure) return; // mean that there no task, return to your base task ( throo kernel_ret)
+    if(!task.pure) return;// try to fill buffer and ret
     switch_to(task); // never return from this
 }
 
 //need to be return throo kernel_ret
 void switch_to(struct task task){ 
+    struct cpu * mycpu = my_cpu();
+    struct task old_task = mycpu->current_task;
+    acquire(&tasks_lock);
+    task_buffer[tasks_buffer_count] = old_task;
+    mycpu->current_task = task;
+    release(&tasks_lock);
 
+    //намазать
 }
 
 struct task create_task(uint8_t (*main)(void)){
@@ -65,6 +79,7 @@ struct task create_task(uint8_t (*main)(void)){
     zero_range((char *)ttbr1_page,  0x1000);            
 
     uint8_t init_res = kpgtbl_init((pagetable_t) ttbr1_page);
+    // we need to handle upgtbl_init
 
     task.uctx.sp_el0 = sp_el0_page;
     task.kctx.sp_el1 = sp_el1_page;
@@ -76,7 +91,10 @@ struct task create_task(uint8_t (*main)(void)){
 
 
     task.pure = true;
-    // TODO: set forkret and another stuff
-    // link registers in kernel ctx need to be exit from switch_to function
+    
+     // sinse this is first time, we just restore all user regs and jump inside main in EL1 regime
+    task.kctx.x30_lr = &restore_and_ret;
+
+
     return task;
 }
