@@ -3,6 +3,8 @@
 #include "speenlock.h"
 #include "vm.h"
 #include "pa_alloc.h"
+#include "memlayout.h"
+
 
 __attribute__((section(".data.thread_shared")))
 static struct speenlock tasks_lock = {
@@ -32,8 +34,9 @@ struct task get_last(void){
     return ret;
 }
 
+// this can be called only when pagetable is exists and they are ready
 struct cpu * my_cpu(void){
-    return &cpus[get_processor_id()];
+    return (struct cpu *) LAYOUT_MY_CPU;
 }
 
 void schedule(void){
