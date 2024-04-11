@@ -13,7 +13,7 @@ static struct speenlock tasks_lock = {
     .name = "clear"
 };
 
-extern void restore_and_ret(void); // exception.S
+extern void urestore_and_ret(void); // exception.S
 
 //current task live hire 
 struct cpu cpus[4]           = {0};
@@ -93,7 +93,7 @@ struct task create_task(uint8_t (*main)(void)){
     task.pure = true;
     
      // sinse this is first time, we just restore all user regs and jump inside main in EL1 regime
-    task.kctx.x30_lr = &restore_and_ret;
+    task.kctx.x30_lr = &urestore_and_ret;
 
 
     return task;
