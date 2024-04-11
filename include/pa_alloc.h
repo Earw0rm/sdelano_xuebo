@@ -42,12 +42,18 @@ struct run{
 
 extern struct run * freepages;
 
+void * memset(void *str, int c, size_t n);
+void * memcpy(void *dest, const void * src, size_t n);
 
 bool zero_range(char * astart, uint64_t size);
 uint64_t init_pa_alloc(void);
 uint64_t get_num_of_free_pages(void);
 uint64_t get_page_unsafe(void);
 uint64_t get_page(void);
+
+
+//memset & memcpy
+
 
 bool free_page(uint64_t paddr);
 // void free_page(uint64_t p);

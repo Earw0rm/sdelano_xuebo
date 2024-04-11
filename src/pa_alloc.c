@@ -15,17 +15,30 @@ static struct speenlock pa_alloc_lock = {
 // each page it is pointer to LOWER address.
 struct run * freepages = ((struct run*) TERMINAL_PAGE);
 
-
-
-//size in word.
-bool zero_range(char * astart, uint64_t size){
-
-    if(size == 0) return false;
-
-    for(; size != 0; --size, ++astart){
-        *(astart) = 0;
+void * memset(void *str, int c, size_t n){
+    void * str_cpy = str;
+    for(size_t i = 0; i < n; ++i){
+        *((char *)str_cpy) = (char) c;
+        str_cpy = (void *)(((char *)str_cpy) + 1);
     }
+    return str;
+}
 
+//copies n characters from memory area src to memory area dest.
+void * memcpy(void * dest, const void * src, size_t n){
+    char * dest_cpy = (char *) dest;
+    char * src_cpy  = (char *) src;
+    for(size_t i = 0; i < n; ++i, ++dest_cpy, ++src_cpy){
+        *dest_cpy = *src_cpy;   
+    }
+    return dest;
+}
+
+
+//size in word. crunch
+bool zero_range(char * astart, uint64_t size){
+    if(size == 0) return false;
+    memset((void *) astart, 0, (size_t) size);
     return true;
 }
 
@@ -129,3 +142,4 @@ bool free_page(uint64_t paddr){
     return true;
 
 }
+

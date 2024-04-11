@@ -3,6 +3,8 @@
 #include "arm/arm_util.h"
 #include "printf.h"
 #include "base.h"
+#include "scheduler.h"
+#include "memlayout.h"
 
 
 /**
@@ -62,7 +64,10 @@ pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc, bool unsafe){
 
 
 // address round down before map. Support only per page mapping
-int8_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharability_flag sflag, bool unsafe_alloc){
+int8_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl,
+             mair_ind ind, sharability_flag sflag, 
+             uint64_t flags, 
+             bool unsafe_alloc){
     va = PGROUNDDOWN(va);
     pa = PGROUNDDOWN(pa);
 
@@ -75,7 +80,7 @@ int8_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharabil
     
 
     // CHECK PAGE LOWER ATTRIBUTES AND UPPER ATTRIBUTES
-    uint64_t page_str = (pa | VALID_DESCRIPTOR | PAGE_DESCRIPTOR | ind | ACCESS_FLAG | ACCESS_PERMISSION | sflag);
+    uint64_t page_str = (pa | flags | ind | ACCESS_FLAG | ACCESS_PERMISSION | sflag);
 
     (*pte) = page_str;
     return 0;
@@ -92,7 +97,7 @@ int8_t kpgtbl_init(pagetable_t pgtbl){
                                             (uint64_t) pointer,
                                             pgtbl,
                                             NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
-                                            NON_SHAREABLE, true);
+                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
         if(res < 0) return -1;
     }
 
@@ -103,7 +108,7 @@ int8_t kpgtbl_init(pagetable_t pgtbl){
                                             (uint64_t) pointer, 
                                             pgtbl,
                                             NORMAL_IO_WRITE_BACK_RW_ALLOCATION_NON_TRAINSIENT,
-                                            INNER_SHAREABLE, true);
+                                            INNER_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
         if(res < 0) return -2;
     }
 
@@ -114,9 +119,25 @@ int8_t kpgtbl_init(pagetable_t pgtbl){
                                             (uint64_t) pointer, 
                                             pgtbl,
                                             DEVICE,
-                                            NON_SHAREABLE, true);
+                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
         if(res < 0) return -3;
     }
+
+    // map memlayout for kernel
+    uint64_t cpu_id = get_processor_id();
+    
+    int64_t res = mapva(LAYOUT_MY_CPU, (uint64_t) &cpus[cpu_id], 
+                                            pgtbl,
+                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
+                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
+    if(res < 0) return -4;
+    res = mapva(LAYOUT_TOP_GUARD_PAGE, (uint64_t) 0x0, 
+                                            pgtbl,
+                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
+                                            NON_SHAREABLE, PAGE_DESCRIPTOR, true);
+    if(res < 0) return -5;
+
+    
     return 0;
 }
 

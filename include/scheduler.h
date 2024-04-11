@@ -84,6 +84,8 @@ struct cpu{
     struct task current_task;
 };
 
+extern struct cpu cpus[];
+
 void schedule(void);
 struct cpu * my_cpu(void);
 void switch_to(struct task task);

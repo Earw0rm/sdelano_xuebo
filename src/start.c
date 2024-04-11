@@ -94,8 +94,9 @@ void configure_el3(uint64_t core_id){
         }
     }
     
-    uint8_t init_res = kpgtbl_init(&ksched_pgtbl[((core_id + 1) << 12)]); // address dependency with init_pa_alloc();
-    w_ttbr1_el1((uint64_t)&ksched_pgtbl[((core_id + 1) << 12)]);
+    pagetable_t core_pagetable = (pagetable_t)&ksched_pgtbl[((core_id + 1) << 12)];
+    uint8_t init_res = kpgtbl_init(core_pagetable); // address dependency with init_pa_alloc();
+    w_ttbr1_el1((uint64_t)core_pagetable);
     enable_mmu();
     
     asm volatile("isb");

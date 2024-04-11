@@ -12,9 +12,7 @@ static struct speenlock tasks_lock = {
 };
 
 //current task live hire 
-static struct cpu cpus[4]    = {0};
-
-
+struct cpu cpus[4]           = {0};
 //acquire lock for changes this 
 static uint64_t tasks_count  =  0 ;
 static struct task tasks[64] = {0};
@@ -67,7 +65,7 @@ struct task create_task(uint8_t (*main)(void)){
 
     task.uctx.sp_el0 = sp_el0_page;
     task.kctx.sp_el1 = sp_el1_page;
-    task.ttbr0_el1 = ttbr0_page;
+    task.ttbr0_el1 = ttbr0_page;    
     task.ttbr1_el1 = ttbr1_page;
 
     task.uctx.elr_el1  = (uint64_t) main;
@@ -76,5 +74,6 @@ struct task create_task(uint8_t (*main)(void)){
 
     task.pure = true;
     // TODO: set forkret and another stuff
+    // link registers in kernel ctx need to be exit from switch_to function
     return task;
 }
