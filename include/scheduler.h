@@ -78,7 +78,7 @@ struct task{
     uint64_t preempt_count;
 
     bool pure;
-    
+
     uint32_t timer_interrput_id;
 };
 
@@ -93,7 +93,7 @@ struct cpu * my_cpu(void);
 void switch_to(struct task task);
 
 #define EL0_INTR_ON (0xf | (~0xf << 6))
-struct task create_task(uint8_t (*main)(void));
+struct task create_task(uint8_t (*main)(void), uint64_t spsr_el1);
 void release_restore_return(void);
 uint8_t fork(uint8_t (*main)(void));
 

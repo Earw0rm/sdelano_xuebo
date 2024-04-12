@@ -42,7 +42,7 @@
 //	ret 
 .endm
 
-.globl
+.globl _switch_to
 _switch_to:
 	stp	x19, x20, [x0, #16 * 0]
 	stp	x21, x22, [x0, #16 * 1]

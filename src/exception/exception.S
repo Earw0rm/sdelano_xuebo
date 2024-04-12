@@ -158,16 +158,6 @@ fiq_invalid_el0_32:
 error_invalid_el0_32:
 	handle_invalid_entry ERROR_INVALID_EL0_32
 
-
-
-el1_irq:
-	save_uctx
-	bl	handle_irq
-	restore_uctx
-	eret 
-
-
-
 el0_sync:
 	kernel_entry
 	bl	handle_el0_sync
@@ -280,7 +270,12 @@ call_table_and_ret:
 restore_and_ret:
 	restore_uctx
 	eret
-
+	
+el1_irq:
+	save_uctx
+	bl	handle_irq
+	restore_uctx
+	eret 
 
 ///////////////////////////////////////////////////////////////////////
 .align 11 

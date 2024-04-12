@@ -82,7 +82,7 @@ void switch_to(struct task task){
 }
 
 uint8_t fork(uint8_t (*main)(void)){
-    struct task task = create_task(main);
+    struct task task = create_task(main, EL0_INTR_ON);
     acquire(&tasks_lock);
         uint8_t task_id = ++tasks_buffer_count;
         task_buffer[task_id] = task;
@@ -93,7 +93,7 @@ uint8_t fork(uint8_t (*main)(void)){
 
 //todo как обрабатывать user pagetable
 //какая она должна быть? 
-struct task create_task(uint8_t (*main)(void)){
+struct task create_task(uint8_t (*main)(void), uint64_t spsr_el1){
     struct task task = {0};
     
     uint64_t sp_el0_page = get_page();
@@ -103,6 +103,7 @@ struct task create_task(uint8_t (*main)(void)){
 
     zero_range((char *)sp_el0_page, 0x1000);
     zero_range((char *)sp_el1_page, 0x1000);
+    
     zero_range((char *)ttbr0_page,  0x1000);
     zero_range((char *)ttbr1_page,  0x1000);            
 
@@ -115,7 +116,7 @@ struct task create_task(uint8_t (*main)(void)){
     task.ttbr1_el1 = ttbr1_page;
 
     task.uctx.elr_el1  = (uint64_t) main;
-    task.uctx.spsr_el1 = EL0_INTR_ON;
+    task.uctx.spsr_el1 = spsr_el1;
 
 
     task.pure = true;
