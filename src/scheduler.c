@@ -18,25 +18,29 @@ extern void urestore_and_ret(void); // exception.S
 //current task live hire 
 struct cpu cpus[4]           = {0};
 //acquire lock for changes this 
-static uint64_t tasks_count  =  0 ;
+static int64_t tasks_count   = -1 ;
 static struct task tasks[64] = {0};
 
 //completed tasks
-static uint64_t tasks_buffer_count  =  0 ;
+static int64_t tasks_buffer_count   = -1 ;
 static struct task task_buffer[64]  = {0};
 
+
+void release_restore_return(void){
+    release(&tasks_lock);
+    urestore_and_ret();
+}
 
 // return 0 if tasks[] has 0 task
 struct task get_last(void){
     struct task ret = {0};
     acquire(&tasks_lock);
-    if(tasks_count == 0){
-        release(&tasks_lock);
-        return ret;
-    }
 
-    ret = tasks[tasks_count];
-    --tasks_count;
+        if(tasks_count >= 0){
+            ret = tasks[tasks_count];
+            --tasks_count;
+        }
+
     release(&tasks_lock);
     return ret;
 }
@@ -48,8 +52,17 @@ struct cpu * my_cpu(void){
 
 void schedule(void){
     struct task task = get_last();
-    if(!task.pure) return;// try to fill buffer and ret
-    switch_to(task); // never return from this
+    if(!task.pure){
+        acquire(&tasks_lock);   
+            if(tasks_buffer_count >= 0){
+                    for(;tasks_buffer_count >= 0; --tasks_buffer_count){
+                    tasks[++tasks_count] = task_buffer[tasks_buffer_count]; 
+                }
+            }
+        release(&tasks_lock);   
+        return;
+    }
+    switch_to(task); 
 }
 
 //need to be return throo kernel_ret
@@ -57,11 +70,22 @@ void switch_to(struct task task){
     struct cpu * mycpu = my_cpu();
     struct task old_task = mycpu->current_task;
     acquire(&tasks_lock);
-    task_buffer[tasks_buffer_count] = old_task;
-    mycpu->current_task = task;
-    release(&tasks_lock);
 
-    //намазать
+        task_buffer[++tasks_buffer_count] = old_task;
+        mycpu->current_task = task;
+
+    _switch_to(&(old_task.kctx), &(task.kctx));
+
+    release(&tasks_lock);
+}
+
+uint8_t fork(uint8_t (*main)(void)){
+    struct task task = create_task(main);
+    acquire(&tasks_lock);
+        uint8_t task_id = ++tasks_buffer_count;
+        task_buffer[task_id] = task;
+    release(&tasks_lock);
+    return task_id;
 }
 
 struct task create_task(uint8_t (*main)(void)){
@@ -69,7 +93,6 @@ struct task create_task(uint8_t (*main)(void)){
     
     uint64_t sp_el0_page = get_page();
     uint64_t sp_el1_page = get_page();
-
     uint64_t ttbr0_page = get_page();
     uint64_t ttbr1_page = get_page();
 
@@ -93,7 +116,7 @@ struct task create_task(uint8_t (*main)(void)){
     task.pure = true;
     
      // sinse this is first time, we just restore all user regs and jump inside main in EL1 regime
-    task.kctx.x30_lr = &urestore_and_ret;
+    task.kctx.x30_lr = &release_restore_return;
 
 
     return task;
