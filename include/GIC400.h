@@ -193,6 +193,8 @@ void gic400_turn_oni(void);
 void gic400_enable_sys_timer(uint32_t timer_num);
 uint32_t get_gic400_info(void);
 
+uint32_t gic400_ask(void);
+void gic400_eoi(uint32_t);
 
 
 

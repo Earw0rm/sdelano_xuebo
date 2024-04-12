@@ -21,7 +21,15 @@ void gic400_turn_ond(void){
 }
 
 
+uint32_t gic400_ask(void){
+    return (GIC400_INTERFACES->ia & 0x3FFU);
+}
 
+void gic400_eoi(uint32_t interrupt_id){
+    uint32_t eoi = GIC400_INTERFACES->eoi;
+    eoi |= interrupt_id;
+    GIC400_INTERFACES->eoi = eoi;
+}
 
 // do nothing if timer_num > 3
 void gic400_enable_sys_timer(uint32_t timer_num){

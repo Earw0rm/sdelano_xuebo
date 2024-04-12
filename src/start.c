@@ -41,8 +41,8 @@ void configure_el1(void){
         gic400_global_init();
 
         // todo change to local timer 
-        // sys_timer_init();
-        // gic400_enable_sys_timer(3); 
+        sys_timer_init();
+        gic400_enable_sys_timer(3); 
 
        __atomic_store(&global_initialization_is_completed_el1, &completed, __ATOMIC_RELEASE);
     }else{

@@ -4,7 +4,7 @@
 #include "vm.h"
 #include "pa_alloc.h"
 #include "memlayout.h"
-
+#include "GIC400.h"
 
 __attribute__((section(".data.thread_shared")))
 static struct speenlock tasks_lock = {
@@ -28,10 +28,11 @@ static struct task task_buffer[64]  = {0};
 
 void release_restore_return(void){
     release(&tasks_lock);
+    gic400_eoi(my_cpu()->current_task.timer_interrput_id);
     urestore_and_ret();
 }
 
-// return 0 if tasks[] has 0 task
+// return {0} if tasks[] has 0 task
 struct task get_last(void){
     struct task ret = {0};
     acquire(&tasks_lock);
@@ -70,6 +71,7 @@ void switch_to(struct task task){
     struct cpu * mycpu = my_cpu();
     struct task old_task = mycpu->current_task;
     acquire(&tasks_lock);
+        task.timer_interrput_id = old_task.timer_interrput_id;
 
         task_buffer[++tasks_buffer_count] = old_task;
         mycpu->current_task = task;
@@ -88,6 +90,9 @@ uint8_t fork(uint8_t (*main)(void)){
     return task_id;
 }
 
+
+//todo как обрабатывать user pagetable
+//какая она должна быть? 
 struct task create_task(uint8_t (*main)(void)){
     struct task task = {0};
     

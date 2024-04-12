@@ -8,7 +8,7 @@
 #include "arm/sysregs.h"
 #include "sys.h"
 #include "mini_uart.h"
-
+#include "scheduler.h"
 
 const char *entry_error_messages[] = {
     "SYNC_INVALID_EL1t",
@@ -33,11 +33,7 @@ const char *entry_error_messages[] = {
 };
 
 
-inline static void _eoi(uint32_t interrupt_id){
-    uint32_t eoi = GIC400_INTERFACES->eoi;
-    eoi |= interrupt_id;
-    GIC400_INTERFACES->eoi = eoi;
-}
+
 
 // this functiion can be call only after init_printf();
 void show_invalid_entry_message(uint32_t ex_type, uint32_t esr_el1, uint32_t elr_el1){
@@ -55,11 +51,10 @@ void el3_panic_msg(uint64_t esr, uint64_t elr){
 // — GICC_IAR, GICC_EOIR, and GICC_HPPIR for Group 0 interrupts
 // — GICC_AIAR, GICC_AEOIR, and GICC_AHPPIR for Group 1 interrupts
 void handle_irq(void){
-    // reg32 aia; ask
-    // reg32 aeoi; 
-    uint32_t interrupt_id = GIC400_INTERFACES->ia & 0x3FFU;
-    if(interrupt_id == GIC_SPURIOUS_INTR) return;
 
+    uint32_t interrupt_id = gic400_ask();
+
+    if(interrupt_id == GIC_SPURIOUS_INTR) return;
 
     // uint32_t current_el = get_current_el();
     //TODO define constant that can enable or disable debug msgs.
@@ -68,12 +63,14 @@ void handle_irq(void){
 
     switch (interrupt_id){
         case SYS_TIMER_0:
-                /* code */
             break;
         case SYS_TIMER_3:
+            my_cpu()->current_task.timer_interrput_id = interrupt_id; 
+
             sys_timer_recharge(3, SCHEDULER_RECHARGE_TIME);
-            _eoi(interrupt_id);
-            // timer_tick();
+            schedule();
+
+            gic400_eoi(interrupt_id);
             break;
         default:
             break;

@@ -158,11 +158,15 @@ fiq_invalid_el0_32:
 error_invalid_el0_32:
 	handle_invalid_entry ERROR_INVALID_EL0_32
 
-// boolsheet, peredelat'
+
+
 el1_irq:
-	kernel_entry
+	save_uctx
 	bl	handle_irq
-	kernel_exit
+	restore_uctx
+	eret 
+
+
 
 el0_sync:
 	kernel_entry
@@ -192,38 +196,6 @@ call_table_and_ret:
 
     //TODO error here 
     ret
-
-
-.align 11 
-.globl el3_vec
-el3_vec:
-	ventry	el3_panic			// Synchronous EL1t
-	ventry	el3_panic			// IRQ EL1t
-	ventry	el3_panic			// FIQ EL1t
-	ventry	el3_panic			// Error EL1t
-
-	ventry	el3_panic			// Synchronous EL1h
-	ventry	el3_panic			// IRQ EL1h
-	ventry	el3_panic			// FIQ EL1h
-	ventry	el3_panic			// Error EL1h
-
-	ventry	el3_panic	         // Synchronous 64-bit EL0
-	ventry	el3_panic	 		// IRQ 64-bit EL0
-	ventry	el3_panic  			// FIQ 64-bit EL0
-	ventry	el3_panic 			// Error 64-bit EL0
-
-	ventry	el3_panic 			// Synchronous 32-bit EL0
-	ventry	el3_panic  			// IRQ 32-bit EL0
-	ventry	el3_panic  			// FIQ 32-bit EL0
-	ventry	el3_panic  			// Error 32-bit EL0
-
-
-el3_panic:
-	b el3_panic
-
-
-
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -310,3 +282,30 @@ restore_and_ret:
 	eret
 
 
+///////////////////////////////////////////////////////////////////////
+.align 11 
+.globl el3_vec
+el3_vec:
+	ventry	el3_panic			// Synchronous EL1t
+	ventry	el3_panic			// IRQ EL1t
+	ventry	el3_panic			// FIQ EL1t
+	ventry	el3_panic			// Error EL1t
+
+	ventry	el3_panic			// Synchronous EL1h
+	ventry	el3_panic			// IRQ EL1h
+	ventry	el3_panic			// FIQ EL1h
+	ventry	el3_panic			// Error EL1h
+
+	ventry	el3_panic	         // Synchronous 64-bit EL0
+	ventry	el3_panic	 		// IRQ 64-bit EL0
+	ventry	el3_panic  			// FIQ 64-bit EL0
+	ventry	el3_panic 			// Error 64-bit EL0
+
+	ventry	el3_panic 			// Synchronous 32-bit EL0
+	ventry	el3_panic  			// IRQ 32-bit EL0
+	ventry	el3_panic  			// FIQ 32-bit EL0
+	ventry	el3_panic  			// Error 32-bit EL0
+
+
+el3_panic:
+	b el3_panic
