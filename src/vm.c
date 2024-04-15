@@ -86,18 +86,14 @@ int8_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl,
     return 0;
 }
 
-
-
-int8_t kpgtbl_init(pagetable_t pgtbl){
-    // pagetable_t pgtbl = (pagetable_t) &kpgtbl;
-
+uint8_t create_kernel_pagetable(pagetable_t pgtbl, bool unsafe){
     //kernel data
     for(char * pointer = 0; pointer < ((char *) PA_KERNEL_END); pointer += 0x1000){
         int8_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)), 
                                             (uint64_t) pointer,
                                             pgtbl,
                                             NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
-                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
+                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, unsafe);
         if(res < 0) return -1;
     }
 
@@ -108,7 +104,7 @@ int8_t kpgtbl_init(pagetable_t pgtbl){
                                             (uint64_t) pointer, 
                                             pgtbl,
                                             NORMAL_IO_WRITE_BACK_RW_ALLOCATION_NON_TRAINSIENT,
-                                            INNER_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
+                                            INNER_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, unsafe);
         if(res < 0) return -2;
     }
 
@@ -119,7 +115,7 @@ int8_t kpgtbl_init(pagetable_t pgtbl){
                                             (uint64_t) pointer, 
                                             pgtbl,
                                             DEVICE,
-                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
+                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, unsafe);
         if(res < 0) return -3;
     }
 
@@ -129,15 +125,26 @@ int8_t kpgtbl_init(pagetable_t pgtbl){
     int64_t res = mapva(LAYOUT_MY_CPU, (uint64_t) &cpus[cpu_id], 
                                             pgtbl,
                                             NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
-                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
+                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, unsafe);
     if(res < 0) return -4;
     res = mapva(LAYOUT_TOP_GUARD_PAGE, (uint64_t) 0x0, 
                                             pgtbl,
                                             NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
-                                            NON_SHAREABLE, PAGE_DESCRIPTOR, true);
+                                            NON_SHAREABLE, PAGE_DESCRIPTOR, unsafe);
     if(res < 0) return -5;
 
-    
+    return 0;
+}
+
+int8_t kpgtbl_init(char * ksched_pgtbl){
+    pagetable_t pgtbl = (pagetable_t)ksched_pgtbl;
+    int8_t res = create_kernel_pagetable(pgtbl, true);
+    if(res < 0) return res;
+
+    // copy core pagetable for each core
+    memcpy(&ksched_pgtbl[0x1000], &ksched_pgtbl[0], 0x1000);
+    memcpy(&ksched_pgtbl[0x2000], &ksched_pgtbl[0], 0x1000);
+    memcpy(&ksched_pgtbl[0x3000], &ksched_pgtbl[0], 0x1000);
     return 0;
 }
 

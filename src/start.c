@@ -33,8 +33,9 @@ static const bool completed = true;
 
 void configure_el1(void){
     uint64_t core_id = get_processor_id();
-
+    
     if(core_id == 0){
+
         muart_init();
         init_printf(0, (VAKERN_BASE | ((uint64_t ) &putc))); // temp unsafe
         
@@ -86,19 +87,19 @@ void configure_el3(uint64_t core_id){
     if(core_id == 0){
 
         uint64_t num_of_init_pages = init_pa_alloc();
-
+        uint8_t init_res = kpgtbl_init(&ksched_pgtbl); 
        __atomic_store(&global_initialization_is_completed_el3, &completed, __ATOMIC_RELEASE);
     }else{
         while(!__atomic_load_n(&global_initialization_is_completed_el3, __ATOMIC_ACQUIRE)){
             asm volatile("nop");
         }
     }
-    
-    pagetable_t core_pagetable = (pagetable_t)&ksched_pgtbl[((core_id + 1) << 12)];
-    uint8_t init_res = kpgtbl_init(core_pagetable); // address dependency with init_pa_alloc();
-    w_ttbr1_el1((uint64_t)core_pagetable);
+    w_ttbr1_el1((uint64_t)&ksched_pgtbl[core_id * 0x1000]);
     enable_mmu();
-    
+
+    bool wait = true;
+    while(wait);
+
     asm volatile("isb");
     asm volatile("eret");// Jump to configure_el1, el1h 
     while(1);

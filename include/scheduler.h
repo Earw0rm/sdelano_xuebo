@@ -79,7 +79,6 @@ struct task{
 
     bool pure;
 
-    uint32_t timer_interrput_id;
 };
 
 struct cpu{
@@ -90,9 +89,11 @@ extern struct cpu cpus[];
 
 void schedule(void);
 struct cpu * my_cpu(void);
-void switch_to(struct task task);
+void switch_to(struct task * new_task);
 
-#define EL0_INTR_ON (0xf | (~0xf << 6))
+#define EL0t_INTR_ON (0x0 | (~0xf << 6))
+#define EL1h_INTR_ON (0x5 | (~0xf << 6))
+
 struct task create_task(uint8_t (*main)(void), uint64_t spsr_el1);
 void release_restore_return(void);
 uint8_t fork(uint8_t (*main)(void));

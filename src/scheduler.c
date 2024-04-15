@@ -14,7 +14,7 @@ static struct speenlock tasks_lock = {
 };
 
 extern void urestore_and_ret(void); // exception.S
-
+extern void _switch_to(struct kcontext * from, struct kcontext * to);
 //current task live hire 
 struct cpu cpus[4]           = {0};
 //acquire lock for changes this 
@@ -28,7 +28,7 @@ static struct task task_buffer[64]  = {0};
 
 void release_restore_return(void){
     release(&tasks_lock);
-    gic400_eoi(my_cpu()->current_task.timer_interrput_id);
+    gic400_eoi(SYS_TIMER_3);
     urestore_and_ret();
 }
 
@@ -63,26 +63,19 @@ void schedule(void){
         release(&tasks_lock);   
         return;
     }
-    switch_to(task); 
+    switch_to(&(task)); 
 }
 
 //need to be return throo kernel_ret
-void switch_to(struct task task){ 
-    struct cpu * mycpu = my_cpu();
-    struct task old_task = mycpu->current_task;
+void switch_to(struct task * new_task){ 
     acquire(&tasks_lock);
-        task.timer_interrput_id = old_task.timer_interrput_id;
-
-        task_buffer[++tasks_buffer_count] = old_task;
-        mycpu->current_task = task;
-
-    _switch_to(&(old_task.kctx), &(task.kctx));
-
+        my_cpu()->current_task = *new_task;
+        _switch_to(&(task_buffer[++tasks_buffer_count].kctx), &(new_task->kctx));
     release(&tasks_lock);
 }
 
 uint8_t fork(uint8_t (*main)(void)){
-    struct task task = create_task(main, EL0_INTR_ON);
+    struct task task = create_task(main, EL0t_INTR_ON);
     acquire(&tasks_lock);
         uint8_t task_id = ++tasks_buffer_count;
         task_buffer[task_id] = task;
@@ -107,7 +100,7 @@ struct task create_task(uint8_t (*main)(void), uint64_t spsr_el1){
     zero_range((char *)ttbr0_page,  0x1000);
     zero_range((char *)ttbr1_page,  0x1000);            
 
-    uint8_t init_res = kpgtbl_init((pagetable_t) ttbr1_page);
+    uint8_t init_res = create_kernel_pagetable((pagetable_t) ttbr1_page, false);
     // we need to handle upgtbl_init
 
     task.uctx.sp_el0 = sp_el0_page;

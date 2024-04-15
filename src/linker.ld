@@ -42,6 +42,7 @@ SECTIONS
     }
     
     . += 1000;
+    . = ALIGN(4096);
     _bss_begin = .;
     
 
@@ -50,7 +51,8 @@ SECTIONS
         *(.bss*) 
 
     }
-    
+    . += 1000;
+    . = ALIGN(4096);    
     _bss_end = .;
     . += 0x1000;
     . = ALIGN(4096);

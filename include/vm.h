@@ -263,7 +263,10 @@ typedef enum {
 pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc, bool unsafe);
 int8_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharability_flag sflag, uint64_t flags, bool unsafe_alloc);
    
-int8_t kpgtbl_init(pagetable_t pgtbl);
+int8_t kpgtbl_init(char * ksched_pgtbl);
+
+uint8_t create_kernel_pagetable(pagetable_t pgtbl, bool unsafe);
+
 void kpgtbl_debug_print(pagetable_t pgtbl);
 
 
