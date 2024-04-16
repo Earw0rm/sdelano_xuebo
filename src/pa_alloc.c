@@ -12,6 +12,9 @@ static struct speenlock pa_alloc_lock = {
 };
 
 
+uint64_t pages[2097152];
+uint64_t pages_p;
+
 // each page it is pointer to LOWER address.
 struct run * freepages = ((struct run*) TERMINAL_PAGE);
 

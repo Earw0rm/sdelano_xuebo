@@ -94,11 +94,10 @@ void configure_el3(uint64_t core_id){
             asm volatile("nop");
         }
     }
+
     w_ttbr1_el1((uint64_t)&ksched_pgtbl[core_id * 0x1000]);
     enable_mmu();
 
-    bool wait = true;
-    while(wait);
 
     asm volatile("isb");
     asm volatile("eret");// Jump to configure_el1, el1h 

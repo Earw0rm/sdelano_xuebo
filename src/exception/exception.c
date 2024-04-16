@@ -65,11 +65,8 @@ void handle_irq(void){
         case SYS_TIMER_0:
             break;
         case SYS_TIMER_3:
- 
-
             sys_timer_recharge(3, SCHEDULER_RECHARGE_TIME);
             schedule();
-
             gic400_eoi(SYS_TIMER_3);
             break;
         default:
