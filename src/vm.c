@@ -163,6 +163,9 @@ uint8_t upgtbl_init(pagetable_t pgtbl){
                                                 NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
                                                 NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);                                                             
             
+            int64_t res = mapva(MEM_USER_TRAMPOLINE, MEM_USER_TRAMPOLINE, pgtbl,
+                                                NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
+                                                NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
 
 }
 
