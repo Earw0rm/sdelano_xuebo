@@ -12,6 +12,9 @@ extern volatile const char _end_of_kernel_addr;
 extern volatile const char _kernel_shared_data_begin;
 extern volatile const char _kernel_shared_data_end;
 
+extern volatile const char _el1vec_start;
+extern volatile const char _el1vec_end;
+
 #endif
 
 
@@ -32,6 +35,8 @@ extern volatile const char _kernel_shared_data_end;
 
 // kernel must start in 0x80000000
 #define MEM_KERN_END                 (&_kernel_text_end_addr)
+#define MEM_EL1VEC_END               (&_el1vec_end)
+#define MEM_EL1VEC_START             (&_el1vec_start)
 #define MEM_KERNEL_SHARED_DATA_END   (&_kernel_shared_data_begin)
 #define MEM_KERNEL_SHARED_DATA_BEGIN (&_kernel_shared_data_begin)
 #define MEM_KERN_TEXT_START          (&_kernel_text_start_addr)

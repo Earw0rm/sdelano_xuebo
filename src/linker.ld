@@ -55,12 +55,18 @@ SECTIONS
 
     . += 0x1000;
     . = ALIGN(4096);
+    
+    _el1vec_start = .;
 
-
+    .data.el1vec : {
+        *(.data.el1vec)
+    } > RAM
 
     . += 0x1000;
     . = ALIGN(4096);
     
+    _el1vec_end = .;
+
     .data : { 
         *(.data) 
     } > RAM

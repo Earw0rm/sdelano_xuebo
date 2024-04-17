@@ -112,6 +112,7 @@
 
 
 // таблица векторов обязана быть выровненной по 2^11
+.section ".data.el1vec"
 .align 11 
 .globl vectors
 vectors:
@@ -175,6 +176,10 @@ el1_irq:
 	eret 
 
 ///////////////////////////////////////////////////////////////////////
+el3_panic:
+	b el3_panic
+
+.section ".data.el3vec"
 .align 11 
 .globl el3_vec
 el3_vec:
@@ -199,5 +204,4 @@ el3_vec:
 	ventry	el3_panic  			// Error 32-bit EL0
 
 
-el3_panic:
-	b el3_panic
+

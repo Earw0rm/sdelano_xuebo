@@ -162,8 +162,8 @@ uint8_t upgtbl_init(pagetable_t pgtbl){
             int64_t res = mapva(MEM_USER_STACK, PGHEADER(stack_page), pgtbl,
                                                 NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
                                                 NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);                                                             
+            
 
-                                                            
 }
 
 // kalling only inside kernel. 
