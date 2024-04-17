@@ -2,7 +2,8 @@
 #include "common.h"
 #include "printf.h"
 #include "speenlock.h"
-
+#include "base.h"
+#include "memlayout.h"
 
 __attribute__((section(".data.thread_shared")))
 static struct speenlock pa_alloc_lock = {
@@ -12,11 +13,10 @@ static struct speenlock pa_alloc_lock = {
 };
 
 
-uint64_t pages[2097152];
-uint64_t pages_p;
-
 // each page it is pointer to LOWER address.
 struct run * freepages = ((struct run*) TERMINAL_PAGE);
+
+
 
 void * memset(void *str, int c, size_t n){
     void * str_cpy = str;
@@ -56,36 +56,35 @@ uint64_t init_pa_alloc(void){
 
     uint64_t alloc_pages_counter = 0;
 
-    uint64_t * sdram_range_1 = ((uint64_t *) KERNEL_GUARD_PAGE);
-    uint64_t * sdram_range_1_end = ((uint64_t *) VC_BASE_BOT);
-
-    uint64_t * sdram_range_2 = ((uint64_t *) VC_BASE_TOP);
-    uint64_t * sdram_range_2_end = ((uint64_t *) SDRAM_TOP);
-
-    uint64_t * sdram_range_3 = ((uint64_t *) SDRAM_BOT);
-    uint64_t * sdram_range_3_end = ((uint64_t *) PASTOP);
-
-
-    for(;sdram_range_1 < sdram_range_1_end; sdram_range_1 += (PAGE_SIZE / 8)){
-        struct run * page = (struct run *) sdram_range_1;
+    for(char * pointer = (char *) MEM_START; pointer < ((char *) MEM_VC_BASE_BOT); pointer += 0x1000){
+        struct run * page = (struct run *) pointer;
         page->next = freepages;
         freepages = page;
         ++alloc_pages_counter;
     }
 
-    for(;sdram_range_2 < sdram_range_2_end; sdram_range_2 += (PAGE_SIZE / 8)){
-        struct run * page = (struct run *) sdram_range_2;
+    for(char * pointer = (char *) MEM_VC_BASE_TOP; pointer < ((char *) MEM_KERN_TEXT_START); pointer += 0x1000){
+        struct run * page = (struct run *) pointer;
         page->next = freepages;
         freepages = page;
         ++alloc_pages_counter;
     }
 
-    for(;sdram_range_3 < sdram_range_3_end; sdram_range_3 += (PAGE_SIZE / 8)){
-        struct run * page = (struct run *) sdram_range_3;
+    for(char * pointer = (char *) MEM_KERN_END; pointer < ((char *) MEM_SDRAM_TOP); pointer += 0x1000){
+        struct run * page = (struct run *) pointer;
         page->next = freepages;
         freepages = page;
         ++alloc_pages_counter;
     }
+
+
+    for(char * pointer = (char *) MEM_SDRAM_BOT; pointer < ((char *) MEM_PASTOP); pointer += 0x1000){
+        struct run * page = (struct run *) pointer;
+        page->next = freepages;
+        freepages = page;
+        ++alloc_pages_counter;
+    }
+
 
     return alloc_pages_counter;
 }
@@ -115,14 +114,13 @@ uint64_t get_page_unsafe(void){
 
 uint64_t get_page(void){
     acquire(&pa_alloc_lock);
-    struct run * page = freepages;
-    
-    if(page == ((struct run*) TERMINAL_PAGE)){
-        release(&pa_alloc_lock);
-        return 0;
-    }
-
-    freepages = page->next;
+        struct run * page = freepages;
+        
+        if(page == ((struct run*) TERMINAL_PAGE)){
+            release(&pa_alloc_lock);
+            return 0;
+        }
+        freepages = page->next;
     release(&pa_alloc_lock);
 
     return ((uint64_t) page);

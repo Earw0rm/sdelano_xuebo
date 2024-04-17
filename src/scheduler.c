@@ -48,7 +48,7 @@ struct task get_last(void){
 
 // this can be called only when pagetable is exists and they are ready
 struct cpu * my_cpu(void){
-    return (struct cpu *) LAYOUT_MY_CPU;
+    return (struct cpu *) LAYOUT_MY_CPU(get_processor_id());
 }
 
 void schedule(void){
@@ -106,7 +106,7 @@ struct task create_task(uint8_t (*main)(void), uint64_t spsr_el1){
     task.uctx.sp_el0 = sp_el0_page;
     task.kctx.sp_el1 = sp_el1_page;
     task.ttbr0_el1 = ttbr0_page;    
-    task.ttbr1_el1 = ttbr1_page;
+
 
     task.uctx.elr_el1  = (uint64_t) main;
     task.uctx.spsr_el1 = spsr_el1;

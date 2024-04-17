@@ -10,13 +10,7 @@
 
 
 __attribute__((aligned(16)))
-volatile char init_stack3[0x4000]; 
-
-__attribute__((aligned(16)))
-volatile char ksched_stack[0x4000];
-
-__attribute__((aligned(0x1000))) 
-volatile char ksched_pgtbl[0x4000] = {0};
+volatile char init_stack3[0x4000]  = {0}; 
 
 extern char vectors[]; // exception.S
 extern char el3_vec[]; // exception.S
@@ -37,7 +31,7 @@ void configure_el1(void){
     if(core_id == 0){
 
         muart_init();
-        init_printf(0, (VAKERN_BASE | ((uint64_t ) &putc))); // temp unsafe
+        init_printf(0, putc); // temp unsafe
         
         gic400_global_init();
 
@@ -73,21 +67,19 @@ void configure_el3(uint64_t core_id){
     w_mair_el1(MAIR_VALUE);
     
 
-    w_elr_el3((uint64_t)  ( VAKERN_BASE | ((uint64_t) &configure_el1) )); //  
-    w_vbar_el1((uint64_t) ( VAKERN_BASE | ((uint64_t) &vectors)     )); //| VAKERN_BASE
+    w_elr_el3(((uint64_t) &configure_el1)); //  
+    w_vbar_el1(&vectors); // only with kpgtbl we can see this vectors
     w_hcr_el2(HCR_VALUE);
     w_scr_el3(SCR_VALUE);
 
     //stuff before interrupt
     w_spsr_el3(SPSR_VALUE);
-
-    uint64_t stack1_addr = (uint64_t) &ksched_stack[((core_id + 1) << 12)];
-    w_sp_el1(VAKERN_BASE | stack1_addr);
+    w_sp_el1(KSTACK(core_id));
 
     if(core_id == 0){
 
         uint64_t num_of_init_pages = init_pa_alloc();
-        uint8_t init_res = kpgtbl_init(&ksched_pgtbl); 
+        uint8_t init_res = kpgtbl_init();
        __atomic_store(&global_initialization_is_completed_el3, &completed, __ATOMIC_RELEASE);
     }else{
         while(!__atomic_load_n(&global_initialization_is_completed_el3, __ATOMIC_ACQUIRE)){
@@ -95,7 +87,7 @@ void configure_el3(uint64_t core_id){
         }
     }
 
-    w_ttbr1_el1((uint64_t)&ksched_pgtbl[core_id * 0x1000]);
+    w_ttbr0_el1((uint64_t)&kpgtbl);
     enable_mmu();
 
 

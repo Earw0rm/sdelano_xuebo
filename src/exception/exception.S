@@ -18,11 +18,18 @@
 
 
 .macro save_uctx
-	sub sp, sp, #8
+	sub sp, sp, #16
 	str x0, [sp]
+	str x1, [sp, #-8]
 
-	ldr x0, #LAYOUT_MY_CPU
+	ldr x0, #LAYOUT_MY_CPU_BASE
 	ldr x0, [x0]
+
+	mrs x1, mpidr_el1
+	and x1, x1, #0xff
+	lsl x1, x1, #12
+
+	add x0, x1 
 
 	stp	x2, x3,   [x0, #16 * 1]
 	stp	x4, x5,   [x0, #16 * 2]
@@ -40,8 +47,11 @@
 	stp	x28, x29, [x0, #16 * 14]
 	
 	mov x2, x0
+
 	ldr x0, [sp]
-	add sp, sp, #8 
+	ldr x1, [sp, #-8]
+	add sp, sp, #16
+
 	stp x0, x1, [x2, #16 * 0]
 	
 	mrs x0, sp_el0
@@ -57,8 +67,14 @@
 .endm
 
 .macro restore_uctx
-	ldr x0, #LAYOUT_MY_CPU
+	ldr x0, #LAYOUT_MY_CPU_BASE
 	ldr x0, [x0]
+
+	mrs x1, mpidr_el1
+	and x1, x1, #0xff
+	lsl x1, x1, #12
+
+	add x0, x1 
 
 	ldp	x2, x3,   [x0, #16 * 1]
 	ldp	x4, x5,   [x0, #16 * 2]

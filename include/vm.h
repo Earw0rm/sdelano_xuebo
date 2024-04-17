@@ -49,7 +49,6 @@
 * Bits[4:2] The index to MAIR.
 * Bits[1:0] Specify the next level is a block/page, page table, or invalid.
 */
-#define VAKERN_BASE ((uint64_t) 0xffffull << 48)
 
 
 // part of TCR_EL1
@@ -123,9 +122,11 @@
 * 0b101 256TB 48 bits, OA[47:0]
 * 0b110 4PB 52 bits,   OA[51:0]
 */
-#define TCR_IPS (0x5ull << 32)
-
-#define TCR_VALUE (TCR_T0SZ | TCR_T1SZ | TCR_TG0_4K | TCR_TG1_4K )
+#define TCR_IPS_256TB  (0x5ull << 32)
+#define TCR_IPS_4GB    (0b000ull << 32)
+#define TCR_IPS_64GB   (0b001ull << 32)
+//| TCR_IPS_64GB
+#define TCR_VALUE (TCR_T0SZ | TCR_T1SZ | TCR_TG0_4K | TCR_TG1_4K ) 
 #define TCR_EL3_VALUE (TCR_TG_EL3 | TCR_TG_EL3 | TCR_DS_EL3)
 
 
@@ -183,13 +184,12 @@ typedef enum {
 #define VA_PTBL_OFFSET(va) (va & 0xfff)
 
 
-//boolshet
-#define PTE2PA(pte) (((*pte) & ((1ull << 48) - 1)) >> 12)
-#define PA2PTE(addr) (addr << 12)
-
-
+#define PAGESIZE 0x1000
 #define DAADDR(addr) ((addr & ((1ull << 48) - 1)) & (~(0xfffull)))
 #define PGROUNDDOWN(addr) ((addr) & ~(4096 - 1))
+
+#define PGHEADER(addr) ((addr + (0x1000 - 8)) & ~7ULL)
+
 
 #define TABLE_DESCRIPTOR        1 << 1
 #define BLOCK_DESCRIPTOR        0 << 1
@@ -260,12 +260,13 @@ typedef enum {
  *  4  | 43 | IA[20:12] | 48 | IA[15:12] | FEAT_TTST is implemented           |  
  *   
 */
-pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc, bool unsafe);
-int8_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharability_flag sflag, uint64_t flags, bool unsafe_alloc);
-   
-int8_t kpgtbl_init(char * ksched_pgtbl);
+extern volatile char kpgtbl[];
 
-uint8_t create_kernel_pagetable(pagetable_t pgtbl, bool unsafe);
+pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc, bool unsafe);
+int8_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl, mair_ind ind, sharability_flag sflag, uint64_t flags, bool unsafe_alloc);   
+int8_t kpgtbl_init(void);
+
+
 
 void kpgtbl_debug_print(pagetable_t pgtbl);
 

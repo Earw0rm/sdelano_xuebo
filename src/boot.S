@@ -1,7 +1,4 @@
-#include "arm/sysregs.h"
-#include "pa_alloc.h"
-
-.section ".data"
+.section ".data.boot"
 _bss_is_clear:
     .quad 0x0
 
@@ -15,7 +12,7 @@ _start:
     add x1, x0, #1
     lsl x1, x1, #12
 
-    adr x2, init_stack3 //in start.c
+    ldr x2, =init_stack3 //in start.c
     add x1, x1, x2 
     mov sp, x1
 
@@ -23,8 +20,8 @@ _start:
     cbnz x0, _wait_for_bss_clear
 
     // set address range for clear
-    adr x0, _bss_begin
-    adr x1, _bss_end
+    ldr x0, =_bss_begin
+    ldr x1, =_bss_end
 
 _zero_bss:
     sub x2, x1, x0

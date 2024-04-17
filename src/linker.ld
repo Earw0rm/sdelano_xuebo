@@ -6,29 +6,37 @@ ENTRY(_start)
 
 MEMORY
 {
-  RAM (rwx) : ORIGIN = 0x0000000000000000, LENGTH = 1024*8M
+  BOOT     (rwx)  : ORIGIN = 0x0,               LENGTH = 4096*10B,
+  RAM      (rwx) : ORIGIN = 0x80000000,         LENGTH = 2048M
 }
 
 SECTIONS
 {
     _boot_start_addr = .;
     .text.boot : {
-    
          *(.text.boot)      
-    } > RAM
+    } > BOOT
 
+    .data.boot : {
+         *(.data.boot)      
+    } > BOOT
+    
+    . += 0x1000;
+    . = ALIGN(4096);
+    
+    _boot_end_addr = .;
+
+    _kernel_text_start_addr = .;
     .text :  { 
         *(.text)
     } > RAM
-
-    .rodata : {
-         *(.rodata)
-    } > RAM
-
+    
     . += 0x1000;
     . = ALIGN(4096);
+    _kernel_text_end_addr = .;
 
-    _thread_shared_data_begin = .;
+    _kernel_data_start_addr = .;
+    _kernel_shared_data_begin = .;
 
     .data.thread_shared : {
         *(.data.thread_shared)
@@ -37,7 +45,18 @@ SECTIONS
     . += 0x1000;
     . = ALIGN(4096);
 
-    _thread_shared_data_end = .;
+    _kernel_shared_data_end = .;
+
+
+
+    .rodata : {
+         *(.rodata)
+    } > RAM
+
+    . += 0x1000;
+    . = ALIGN(4096);
+
+
 
     . += 0x1000;
     . = ALIGN(4096);

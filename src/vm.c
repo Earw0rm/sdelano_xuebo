@@ -28,6 +28,14 @@
 // Return the address of the PTE in page table pagetable
 // that corresponds to virtual address va.  If alloc!=0,
 // create any required page-table pages.
+
+__attribute__((aligned(0x1000))) //start from hire
+volatile char kpgtbl[0x1000] = {0};
+
+//why its here?
+__attribute__((aligned(16)))
+volatile char kstack1[0x4000] = {0};
+
 pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc, bool unsafe){
     // if va >= maxva then panic 
 
@@ -49,7 +57,7 @@ pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc, bool unsafe){
 
             if(page == 0 || ((page & 0xfffull) != 0)) return (pte_t *) 0x1; // mean that they are not page aligned or something
 
-            zero_range((char *) page, PAGE_SIZE);
+            zero_range((char *) page, PAGESIZE);
             
 
             *pte = (page | TABLE_DESCRIPTOR | VALID_DESCRIPTOR);
@@ -86,76 +94,83 @@ int8_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl,
     return 0;
 }
 
-uint8_t create_kernel_pagetable(pagetable_t pgtbl, bool unsafe){
-    //kernel data
-    for(char * pointer = 0; pointer < ((char *) PA_KERNEL_END); pointer += 0x1000){
-        int8_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)), 
-                                            (uint64_t) pointer,
-                                            pgtbl,
+
+
+int8_t kpgtbl_init(void){
+    //1st memory range
+    for(char * pointer = (char *) MEM_START; pointer < ((char *) MEM_VC_BASE_BOT); pointer += 0x1000){
+        int8_t res = mapva((uint64_t) pointer, (uint64_t) pointer,
+                                            kpgtbl,
                                             NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
-                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, unsafe);
+                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
         if(res < 0) return -1;
     }
-
-    // whats type of memory we need hire? 
-    // shared kernel 
-    for(char * pointer = ((char *) PA_THREAD_SHARED_DATA_BEGIN); pointer < ((char *) PA_THREAD_SHARED_DATA_END); pointer += 0x1000){
-        int64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)),
-                                            (uint64_t) pointer, 
-                                            pgtbl,
-                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_NON_TRAINSIENT,
-                                            INNER_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, unsafe);
+    //2nd memory range
+    for(char * pointer = (char *) MEM_VC_BASE_TOP; pointer < ((char *) MEM_SDRAM_TOP); pointer += 0x1000){
+        int8_t res = mapva((uint64_t) pointer, (uint64_t) pointer,
+                                            kpgtbl,
+                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
+                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
         if(res < 0) return -2;
     }
-
-    
-    //devices
-    for(char * pointer = ((char *) MAIN_PERIPHERAL_BOT); pointer < ((char *) ARM_LOCAL_PERIPHERAL_TOP); pointer += 0x1000){
-        int64_t res = mapva((VAKERN_BASE | ((uint64_t) pointer)),
-                                            (uint64_t) pointer, 
-                                            pgtbl,
-                                            DEVICE,
-                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, unsafe);
+    //3rd memory range
+    for(char * pointer = (char *) MEM_SDRAM_BOT; pointer < ((char *) MEM_PASTOP); pointer += 0x1000){
+        int8_t res = mapva((uint64_t) pointer, (uint64_t) pointer,
+                                            kpgtbl,
+                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
+                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
         if(res < 0) return -3;
     }
 
-    // map memlayout for kernel
-    uint64_t cpu_id = get_processor_id();
-    
-    int64_t res = mapva(LAYOUT_MY_CPU, (uint64_t) &cpus[cpu_id], 
-                                            pgtbl,
-                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
-                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, unsafe);
-    if(res < 0) return -4;
-    res = mapva(LAYOUT_TOP_GUARD_PAGE, (uint64_t) 0x0, 
-                                            pgtbl,
-                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
-                                            NON_SHAREABLE, PAGE_DESCRIPTOR, unsafe);
-    if(res < 0) return -5;
+    //kernel shared data special memory type
+    for(char * pointer = ((char *) MEM_KERNEL_SHARED_DATA_BEGIN); pointer < ((char *) MEM_KERNEL_SHARED_DATA_END); pointer += 0x1000){
+        int64_t res = mapva((uint64_t) pointer, (uint64_t) pointer, 
+                                            kpgtbl,
+                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_NON_TRAINSIENT,
+                                            INNER_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
+        if(res < 0) return -4;
+    }
+
+    //devices
+    for(char * pointer = ((char *) MAIN_PERIPHERAL_BOT); pointer < ((char *) ARM_LOCAL_PERIPHERAL_TOP); pointer += 0x1000){
+        int64_t res = mapva((uint64_t) pointer, (uint64_t) pointer, 
+                                            kpgtbl,
+                                            DEVICE,
+                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
+        if(res < 0) return -5;
+    }
+
+    //kstack1
+    for(uint8_t i = 0; i <= 3; ++i){
+        int64_t res = mapva(KSTACK(i), (uint64_t) &kstack1[(i + 1) << 12], kpgtbl,
+                                                NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
+                                                NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
+        if(res < 0) return -6;        
+    }
+
 
     return 0;
+}   
+
+uint8_t upgtbl_init(pagetable_t pgtbl){
+            uint64_t tf_page = get_page();
+            int64_t res = mapva(MEM_USER_TRAPFRAME, tf_page, pgtbl,
+                                                NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
+                                                NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
+            
+            uint64_t stack_page = get_page();
+            int64_t res = mapva(MEM_USER_STACK, PGHEADER(stack_page), pgtbl,
+                                                NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
+                                                NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);                                                             
+
+                                                            
 }
-
-int8_t kpgtbl_init(char * ksched_pgtbl){
-    pagetable_t pgtbl = (pagetable_t)ksched_pgtbl;
-    int8_t res = create_kernel_pagetable(pgtbl, true);
-    if(res < 0) return res;
-
-    // copy core pagetable for each core
-    memcpy(&ksched_pgtbl[0x1000], &ksched_pgtbl[0], 0x1000);
-    memcpy(&ksched_pgtbl[0x2000], &ksched_pgtbl[0], 0x1000);
-    memcpy(&ksched_pgtbl[0x3000], &ksched_pgtbl[0], 0x1000);
-    return 0;
-}
-
 
 // kalling only inside kernel. 
 // Pagetables can contain physical adress link on next pgtbl
 // SO, if address starts from 0x0000, then we change address to start with 0xffff
 inline static void kpgtbl_debug_print_l(pagetable_t pgtbl, uint8_t level){
     
-    pgtbl = (uint64_t *) (((uint64_t)pgtbl) | VAKERN_BASE); // if mmu enabled...
-
 
     for(uint8_t i = 0; (i < level && level < 3); ++i){
         printf("\t");
