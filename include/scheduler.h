@@ -73,8 +73,8 @@ void switch_to(struct task * new_task);
 #define EL0t_INTR_ON (0x0 | (~0xf << 6))
 #define EL1h_INTR_ON (0x5 | (~0xf << 6))
 
-struct task create_task(uint8_t (*main)(void), uint64_t spsr_el1);
-void release_restore_return(void);
+struct task user_task_create(uint8_t (*main)(void));
+
 uint8_t fork(uint8_t (*main)(void));
 
 #endif

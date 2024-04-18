@@ -21,7 +21,10 @@
 	sub sp, sp, #8
 	str x0, [sp]
 
-	ldr x0, #MEM_USER_TRAPFRAME
+	// ldr x0, #MEM_USER_TRAPFRAME
+	// ldr x0, [x0]
+	ldr x0, =_el1vec_end
+	add x0, x0, #0x1000
 	ldr x0, [x0]
 
 	stp	x2, x3,   [x0, #16 * 1]
@@ -59,7 +62,8 @@
 .endm
 
 .macro restore_uctx
-	ldr x0, #MEM_USER_TRAPFRAME
+	ldr x0, =_el1vec_end
+	add x0, x0, #0x1000
 	ldr x0, [x0]
 
 	ldp	x2, x3,   [x0, #16 * 1]
@@ -143,13 +147,13 @@ el0_irq:
 	//handle
 	bl	handle_irq_el0
 	//prepare to restore 
-	ldr x0, #LAYOUT_MY_CPU_BASE
-	ldr x0, [x0]
+	ldr x0, =LAYOUT_MY_CPU_BASE
+//	ldr x0, [x0]
 
 	mrs x1, mpidr_el1
 	and x1, x1, #0xff
 	lsl x1, x1, #12
-	add x0, x1 
+	add x0, x0, x1 
 
 	// my_cpu -> task pagetable
 	ldr x0, [x0, #8]
@@ -186,10 +190,12 @@ el1_irq:
 	eret 
 
 ///////////////////////////////////////////////////////////////////////
+.section ".el3vec"
+
 el3_panic:
 	b el3_panic
 
-.section ".el3vec"
+
 .align 11 
 .globl el3_vec
 el3_vec:

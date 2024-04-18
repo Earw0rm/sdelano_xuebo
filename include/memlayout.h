@@ -34,12 +34,12 @@ extern volatile const char _el1vec_end;
 #define MEM_SDRAM_TOP     (0xFC000000)
 
 // kernel must start in 0x80000000
-#define MEM_KERN_END                 (&_kernel_text_end_addr)
-#define MEM_EL1VEC_END               (&_el1vec_end)
-#define MEM_EL1VEC_START             (&_el1vec_start)
-#define MEM_KERNEL_SHARED_DATA_END   (&_kernel_shared_data_begin)
-#define MEM_KERNEL_SHARED_DATA_BEGIN (&_kernel_shared_data_begin)
-#define MEM_KERN_TEXT_START          (&_kernel_text_start_addr)
+#define MEM_KERN_END                 ((uint64_t)&_kernel_text_end_addr)
+#define MEM_EL1VEC_END               ((uint64_t)&_el1vec_end)
+#define MEM_EL1VEC_START             ((uint64_t)&_el1vec_start)
+#define MEM_KERNEL_SHARED_DATA_END   ((uint64_t)&_kernel_shared_data_begin)
+#define MEM_KERNEL_SHARED_DATA_BEGIN ((uint64_t)&_kernel_shared_data_begin)
+#define MEM_KERN_TEXT_START          ((uint64_t)&_kernel_text_start_addr)
 
 #define MEM_VC_BASE_TOP   (0x40000000)
 #define MEM_VC_BASE_BOT   (MEM_VC_BASE_TOP - 0x10000000) // 256 mb vc sdram

@@ -15,11 +15,11 @@ SECTIONS
     _boot_start_addr = .;
     .text.boot : {
          *(.text.boot)      
-    } > BOOT
+    } > RAM
 
     .data.boot : {
          *(.data.boot)      
-    } > BOOT
+    } > RAM
     
     . += 0x1000;
     . = ALIGN(4096);
@@ -62,7 +62,7 @@ SECTIONS
     . = ALIGN(4096);
 
     .el1vec : {
-        *(.data.el1vec)
+        *(.el1vec)
     } > RAM
 
     . += 0x1000;

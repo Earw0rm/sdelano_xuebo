@@ -90,24 +90,25 @@ struct task user_task_create(uint8_t (*main)(void)){
             uint64_t tf_page = get_page();
             zero_range((char *)tf_page, 0x1000);
 
+            int64_t mapva_res;
 
-            int64_t res = mapva(MEM_USER_TRAPFRAME, tf_page, pgtbl,
+            mapva_res = mapva(MEM_USER_TRAPFRAME, tf_page, pgtbl,
                                                 NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
                                                 NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, false);
             
             uint64_t stack_page = get_page();
             zero_range((char *)stack_page, 0x1000);
 
-            int64_t res = mapva(MEM_USER_STACK, stack_page, pgtbl,
+            mapva_res = mapva(MEM_USER_STACK, stack_page, pgtbl,
                                                 NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
                                                 NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, false);                                                             
             
 
             for(char * pointer = (char *) MEM_USER_TRAMPOLINE_START; pointer < ((char *) MEM_USER_TRAMPOLINE_END); pointer += 0x1000){
-                int64_t res = mapva(pointer, pointer, pgtbl,
+                mapva_res = mapva(pointer, pointer, pgtbl,
                                                     NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
                                                     NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, false);
-                if(res < 0) return task;        
+                if(mapva_res < 0) return task;        
             }
 
             //выдели кернел стэк
