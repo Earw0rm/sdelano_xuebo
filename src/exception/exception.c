@@ -10,36 +10,10 @@
 #include "mini_uart.h"
 #include "scheduler.h"
 
-const char *entry_error_messages[] = {
-    "SYNC_INVALID_EL1t",
-    "IRQ_INVALID_EL1t",
-    "FIQ_INVALID_EL1t",
-    "ERROR_INVALID_EL1t"
-
-    "SYNC_INVALID_EL1h",
-    "IRQ_INVALID_EL1h",
-    "FIQ_INVALID_EL1h",
-    "ERROR_INVALID_EL1h"
-
-    "SYNC_INVALID_EL0_64",
-    "IRQ_INVALID_EL0_65",
-    "FIQ_INVALID_EL0_65",
-    "ERROR_INVALID_EL0_65"
-
-    "SYNC_INVALID_EL0_32",
-    "IRQ_INVALID_EL0_32",
-    "FIQ_INVALID_EL0_32",
-    "ERROR_INVALID_EL0_32"
-};
 
 
 
 
-// this functiion can be call only after init_printf();
-void show_invalid_entry_message(uint32_t ex_type, uint32_t esr_el1, uint32_t elr_el1){
-    const char * err_msg = (entry_error_messages[ex_type]);
-    printf("An exception occurred without a proper handler. \r\n Reason: %s, esr_el1: %u, elr_el1: %u. \r\n", err_msg, esr_el1, elr_el1);
-}
 
 void el3_panic_msg(uint64_t esr, uint64_t elr){
     muart_send_string("El3_panic \r\n");
@@ -50,16 +24,11 @@ void el3_panic_msg(uint64_t esr, uint64_t elr){
 // are used to manage Group 0 and Group 1 interrupts, as follows:
 // — GICC_IAR, GICC_EOIR, and GICC_HPPIR for Group 0 interrupts
 // — GICC_AIAR, GICC_AEOIR, and GICC_AHPPIR for Group 1 interrupts
-void handle_irq(void){
+void handle_irq_el0(void){
 
     uint32_t interrupt_id = gic400_ask();
 
     if(interrupt_id == GIC_SPURIOUS_INTR) return;
-
-    // uint32_t current_el = get_current_el();
-    //TODO define constant that can enable or disable debug msgs.
-    // printf("Handle_irq. Interrupt id is: %d \r\n", interrupt_id);
-    // printf("Exception level : EL%d \r\n ", current_el);
 
     switch (interrupt_id){
         case SYS_TIMER_0:
@@ -74,6 +43,23 @@ void handle_irq(void){
     }
 }
 
+void handle_irq_el1(void){
+
+    uint32_t interrupt_id = gic400_ask();
+
+    if(interrupt_id == GIC_SPURIOUS_INTR) return;
+
+    switch (interrupt_id){
+        case SYS_TIMER_0:
+            break;
+        case SYS_TIMER_3:
+            sys_timer_recharge(3, SCHEDULER_RECHARGE_TIME);
+            gic400_eoi(SYS_TIMER_3);
+            break;
+        default:
+            break;
+    }
+}
 
 void handle_el0_sync(uint64_t x0, uint64_t x1,
                      uint64_t x2, uint64_t x3,

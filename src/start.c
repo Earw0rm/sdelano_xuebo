@@ -68,7 +68,7 @@ void configure_el3(uint64_t core_id){
     
 
     w_elr_el3(((uint64_t) &configure_el1)); //  
-    w_vbar_el1(&vectors); // only with kpgtbl we can see this vectors
+    w_vbar_el1(&vectors); 
     w_hcr_el2(HCR_VALUE);
     w_scr_el3(SCR_VALUE);
 
@@ -88,6 +88,8 @@ void configure_el3(uint64_t core_id){
     }
 
     w_ttbr0_el1((uint64_t)&kpgtbl);
+    w_ttbr1_el1((uint64_t)&kpgtbl);
+    
     enable_mmu();
 
 

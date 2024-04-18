@@ -48,13 +48,19 @@ extern volatile const char _el1vec_end;
 
 //###################user###########################
 
-#define MEM_USER_MAXVA      (0x80000000ull)
+
 //trampoline it is pointer to exception vectors that live in kernel
 //in user process we set vectors equals to kernel vector
 
 //All addresses above 0x80000000 in the user should be accessible only from el1
-#define MEM_USER_TRAMPOLINE (MEM_EL1VEC_START)
-#define MEM_USER_TRAPFRAME  (0x80001000ull)
+
+#define MEM_USER_TRAMPOLINE_END   (MEM_EL1VEC_END)
+#define MEM_USER_TRAMPOLINE_START (MEM_EL1VEC_START)
+
+#define MEM_USER_TRAPFRAME  (MEM_USER_TRAMPOLINE_END + 0x1000)
+
+
+#define MEM_USER_MAXVA      (0x80000000ull)
 #define MEM_USER_STACK      (0x79999000ull)
 #define MEM_USER_START      (0x0)
 

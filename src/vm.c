@@ -152,7 +152,12 @@ int8_t kpgtbl_init(void){
     return 0;
 }   
 
-uint8_t upgtbl_init(pagetable_t pgtbl){
+struct task user_task_create(void){
+            struct task task;
+            task.pure = false;
+
+            pagetable_t pgtbl = (pagetable_t) get_page();
+
             uint64_t tf_page = get_page();
             int64_t res = mapva(MEM_USER_TRAPFRAME, tf_page, pgtbl,
                                                 NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
@@ -163,10 +168,17 @@ uint8_t upgtbl_init(pagetable_t pgtbl){
                                                 NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
                                                 NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);                                                             
             
-            int64_t res = mapva(MEM_USER_TRAMPOLINE, MEM_USER_TRAMPOLINE, pgtbl,
-                                                NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
-                                                NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
 
+            for(char * pointer = (char *) MEM_USER_TRAMPOLINE_START; pointer < ((char *) MEM_USER_TRAMPOLINE_END); pointer += 0x1000){
+                int64_t res = mapva(pointer, pointer, pgtbl,
+                                                    NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
+                                                    NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
+                if(res < 0) return task;        
+            }
+            task.trapframe = (struct trapframe *) tf_page;
+            task.ttbr0_el1 = (uint64_t) pgtbl;
+            task.pure = true;
+            return task;
 }
 
 // kalling only inside kernel. 

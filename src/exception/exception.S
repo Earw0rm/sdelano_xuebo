@@ -3,7 +3,7 @@
 #include "arm/arm_util.h"
 #include "memlayout.h"
 
-.section ".text"
+.section ".el1vec"
 // ***************************************
 // Exceptiom vector table, Page 5357 of AArch64-Reference-Manual (A-profile architecture reference manual).    
 // align 7 sinse each level of exceptions in 0x80 border
@@ -18,18 +18,11 @@
 
 
 .macro save_uctx
-	sub sp, sp, #16
+	sub sp, sp, #8
 	str x0, [sp]
-	str x1, [sp, #-8]
 
-	ldr x0, #LAYOUT_MY_CPU_BASE
+	ldr x0, #MEM_USER_TRAPFRAME
 	ldr x0, [x0]
-
-	mrs x1, mpidr_el1
-	and x1, x1, #0xff
-	lsl x1, x1, #12
-
-	add x0, x1 
 
 	stp	x2, x3,   [x0, #16 * 1]
 	stp	x4, x5,   [x0, #16 * 2]
@@ -49,8 +42,7 @@
 	mov x2, x0
 
 	ldr x0, [sp]
-	ldr x1, [sp, #-8]
-	add sp, sp, #16
+	add sp, sp, #8
 
 	stp x0, x1, [x2, #16 * 0]
 	
@@ -67,14 +59,8 @@
 .endm
 
 .macro restore_uctx
-	ldr x0, #LAYOUT_MY_CPU_BASE
+	ldr x0, #MEM_USER_TRAPFRAME
 	ldr x0, [x0]
-
-	mrs x1, mpidr_el1
-	and x1, x1, #0xff
-	lsl x1, x1, #12
-
-	add x0, x1 
 
 	ldp	x2, x3,   [x0, #16 * 1]
 	ldp	x4, x5,   [x0, #16 * 2]
@@ -112,7 +98,7 @@
 
 
 // таблица векторов обязана быть выровненной по 2^11
-.section ".data.el1vec"
+
 .align 11 
 .globl vectors
 vectors:
@@ -126,10 +112,10 @@ vectors:
 	ventry	invalid_ex			// FIQ EL1h
 	ventry	invalid_ex			// Error EL1h
 
-	ventry	el0_sync	         // Synchronous 64-bit EL0
-	ventry	invalid_ex	 // IRQ 64-bit EL0
+	ventry	el0_sync	 // Synchronous 64-bit EL0
+	ventry	el0_irq	     // IRQ 64-bit EL0
 	ventry	invalid_ex   // FIQ 64-bit EL0
-	ventry	invalid_ex // Error 64-bit EL0
+	ventry	invalid_ex   // Error 64-bit EL0
 
 	ventry	invalid_ex // Synchronous 32-bit EL0
 	ventry	invalid_ex  // IRQ 32-bit EL0
@@ -148,6 +134,30 @@ el0_sync:
 	restore_uctx
 	eret
 
+el0_irq:
+	save_uctx
+	//prepare to handle
+	mrs x0, ttbr1_el1
+	msr ttbr0_el1, x0
+	isb
+	//handle
+	bl	handle_irq_el0
+	//prepare to restore 
+	ldr x0, #LAYOUT_MY_CPU_BASE
+	ldr x0, [x0]
+
+	mrs x1, mpidr_el1
+	and x1, x1, #0xff
+	lsl x1, x1, #12
+	add x0, x1 
+
+	// my_cpu -> task pagetable
+	ldr x0, [x0, #8]
+	msr ttbr0_el1, x0
+	isb 
+
+	restore_uctx
+	eret
 
 // for sys.S
 .globl call_table_and_ret
@@ -171,7 +181,7 @@ urestore_and_ret:
 	
 el1_irq:
 	save_uctx
-	bl	handle_irq
+	bl	handle_irq_el1
 	restore_uctx
 	eret 
 
@@ -179,7 +189,7 @@ el1_irq:
 el3_panic:
 	b el3_panic
 
-.section ".data.el3vec"
+.section ".el3vec"
 .align 11 
 .globl el3_vec
 el3_vec:
