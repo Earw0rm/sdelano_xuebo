@@ -22,7 +22,9 @@ static inline uint32_t get_current_el(void){
     return (x >> 2);
 }
 
-static inline uint64_t get_exception_syndrome1(void){
+
+
+static inline uint64_t r_esr_el1(void){
     uint64_t x;
     asm volatile("mrs %0, esr_el1" : "=r" (x));
     return x;
