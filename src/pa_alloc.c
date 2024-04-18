@@ -63,27 +63,27 @@ uint64_t init_pa_alloc(void){
         ++alloc_pages_counter;
     }
 
-    for(char * pointer = (char *) MEM_VC_BASE_TOP; pointer < ((char *) MEM_KERN_TEXT_START); pointer += 0x1000){
-        struct run * page = (struct run *) pointer;
-        page->next = freepages;
-        freepages = page;
-        ++alloc_pages_counter;
-    }
+    // for(char * pointer = (char *) MEM_VC_BASE_TOP; pointer < ((char *) MEM_KERN_TEXT_START); pointer += 0x1000){
+    //     struct run * page = (struct run *) pointer;
+    //     page->next = freepages;
+    //     freepages = page;
+    //     ++alloc_pages_counter;
+    // }
 
-    for(char * pointer = (char *) MEM_KERN_END; pointer < ((char *) MEM_SDRAM_TOP); pointer += 0x1000){
-        struct run * page = (struct run *) pointer;
-        page->next = freepages;
-        freepages = page;
-        ++alloc_pages_counter;
-    }
+    // for(char * pointer = (char *) MEM_KERN_END; pointer < ((char *) MEM_SDRAM_TOP); pointer += 0x1000){
+    //     struct run * page = (struct run *) pointer;
+    //     page->next = freepages;
+    //     freepages = page;
+    //     ++alloc_pages_counter;
+    // }
 
 
-    for(char * pointer = (char *) MEM_SDRAM_BOT; pointer < ((char *) MEM_PASTOP); pointer += 0x1000){
-        struct run * page = (struct run *) pointer;
-        page->next = freepages;
-        freepages = page;
-        ++alloc_pages_counter;
-    }
+    // for(char * pointer = (char *) MEM_SDRAM_BOT; pointer < ((char *) MEM_PASTOP); pointer += 0x1000){
+    //     struct run * page = (struct run *) pointer;
+    //     page->next = freepages;
+    //     freepages = page;
+    //     ++alloc_pages_counter;
+    // }
 
 
     return alloc_pages_counter;

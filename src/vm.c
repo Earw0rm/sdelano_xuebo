@@ -105,22 +105,24 @@ int8_t kpgtbl_init(void){
                                             NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
         if(res < 0) return -1;
     }
-    //2nd memory range
-    for(char * pointer = (char *) MEM_VC_BASE_TOP; pointer < ((char *) MEM_SDRAM_TOP); pointer += 0x1000){
-        int8_t res = mapva((uint64_t) pointer, (uint64_t) pointer,
-                                            kpgtbl,
-                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
-                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
-        if(res < 0) return -2;
-    }
-    //3rd memory range
-    for(char * pointer = (char *) MEM_SDRAM_BOT; pointer < ((char *) MEM_PASTOP); pointer += 0x1000){
-        int8_t res = mapva((uint64_t) pointer, (uint64_t) pointer,
-                                            kpgtbl,
-                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
-                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
-        if(res < 0) return -3;
-    }
+
+    //temp for faster initialization
+    // //2nd memory range
+    // for(char * pointer = (char *) MEM_VC_BASE_TOP; pointer < ((char *) MEM_SDRAM_TOP); pointer += 0x1000){
+    //     int8_t res = mapva((uint64_t) pointer, (uint64_t) pointer,
+    //                                         kpgtbl,
+    //                                         NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
+    //                                         NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
+    //     if(res < 0) return -2;
+    // }
+    // //3rd memory range
+    // for(char * pointer = (char *) MEM_SDRAM_BOT; pointer < ((char *) MEM_PASTOP); pointer += 0x1000){
+    //     int8_t res = mapva((uint64_t) pointer, (uint64_t) pointer,
+    //                                         kpgtbl,
+    //                                         NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
+    //                                         NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
+    //     if(res < 0) return -3;
+    // }
 
     //kernel shared data special memory type
     for(char * pointer = ((char *) MEM_KERNEL_SHARED_DATA_BEGIN); pointer < ((char *) MEM_KERNEL_SHARED_DATA_END); pointer += 0x1000){
