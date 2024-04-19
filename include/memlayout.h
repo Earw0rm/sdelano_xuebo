@@ -9,13 +9,15 @@ extern volatile const char _kernel_text_start_addr;
 extern volatile const char _kernel_text_end_addr;
 extern volatile const char _end_of_kernel_addr;
 
-extern volatile const char _kernel_shared_data_begin;
-extern volatile const char _kernel_shared_data_end;
+
 
 extern volatile const char _el1vec_start;
 extern volatile const char _el1vec_end;
 
 extern volatile const char _boot_start_addr;
+
+extern volatile const char _thread_shared_begin;
+extern volatile const char _thread_shared_end;
 #endif
 
 
@@ -40,8 +42,8 @@ extern volatile const char _boot_start_addr;
 
 #define MEM_EL1VEC_END               ((uint64_t)&_el1vec_end)
 #define MEM_EL1VEC_START             ((uint64_t)&_el1vec_start)
-#define MEM_KERNEL_SHARED_DATA_END   ((uint64_t)&_kernel_shared_data_end)
-#define MEM_KERNEL_SHARED_DATA_BEGIN ((uint64_t)&_kernel_shared_data_begin)
+#define MEM_KERNEL_SHARED_DATA_END   ((uint64_t)&_thread_shared_end)
+#define MEM_KERNEL_SHARED_DATA_BEGIN ((uint64_t)&_thread_shared_begin)
 #define MEM_KERN_TEXT_END            ((uint64_t)&_kernel_text_end_addr)
 #define MEM_KERN_TEXT_START          ((uint64_t)&_kernel_text_start_addr)
 

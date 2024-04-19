@@ -39,17 +39,22 @@ SECTIONS
     _kernel_text_end_addr = .;
 
     _kernel_data_start_addr = .;
-    _kernel_shared_data_begin = .;
 
-    .data.thread_shared : {
-        *(.data.thread_shared)
-    } > RAM
+    _thread_shared_begin = .;
+
+
+    
+    .thread_shared : {
+    . += 0x1000;
+    . = ALIGN(4096);
+        *(.thread_shared)
 
     . += 0x1000;
     . = ALIGN(4096);
 
-    _kernel_shared_data_end = .;
+    } > RAM
 
+    _thread_shared_end = .;
 
 
     .rodata : {
@@ -58,7 +63,8 @@ SECTIONS
 
     . += 0x1000;
     . = ALIGN(4096);
-    
+
+
     _el1vec_start = .;
     
     . += 0x1000;
@@ -94,6 +100,9 @@ SECTIONS
 
     . += 0x1000;
     . = ALIGN(4096);
+
+
+
 
     _end_of_kernel_addr = .;
 }

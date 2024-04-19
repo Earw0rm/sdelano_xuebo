@@ -6,7 +6,7 @@
 #include "memlayout.h"
 #include "GIC400.h"
 
-__attribute__((section(".data.thread_shared")))
+__attribute__((section(".thread_shared")))
 static struct speenlock tasks_lock = {
     .cpu_num = -1,
     .locked = 0,

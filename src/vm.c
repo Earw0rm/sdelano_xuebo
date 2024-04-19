@@ -134,9 +134,10 @@ int8_t kpgtbl_init(void){
         if(res < 0) return -4;
     }
 
-
+    char * ps = ((char *) MEM_KERNEL_SHARED_DATA_BEGIN);
+    char * pe = ((char *) MEM_KERNEL_SHARED_DATA_END);
     //kernel shared data special memory type
-    for(char * pointer = ((char *) MEM_KERNEL_SHARED_DATA_BEGIN); pointer < ((char *) MEM_KERNEL_SHARED_DATA_END); pointer += 0x1000){
+    for(char * pointer = ps; pointer < pe; pointer += 0x1000){
         int64_t res = mapva((uint64_t) pointer, (uint64_t) pointer, 
                                             (pagetable_t)&kpgtbl,
                                             NORMAL_IO_WRITE_BACK_RW_ALLOCATION_NON_TRAINSIENT,

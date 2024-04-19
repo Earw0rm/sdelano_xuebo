@@ -19,7 +19,7 @@ extern void kernel_main(void);
 
 static bool global_initialization_is_completed_el3 = false;
 
-__attribute__((section(".data.thread_shared")))
+__attribute__((section(".thread_shared")))
 static bool global_initialization_is_completed_el1 = false;
 
 static const bool completed = true;
@@ -36,8 +36,8 @@ void configure_el1(void){
         gic400_global_init();
 
         // todo change to local timer 
-        sys_timer_init();
-        gic400_enable_sys_timer(3); 
+        // sys_timer_init();
+        // gic400_enable_sys_timer(3); 
 
        __atomic_store(&global_initialization_is_completed_el1, &completed, __ATOMIC_RELEASE);
     }else{
@@ -78,11 +78,11 @@ void configure_el3(uint64_t core_id){
     w_sp_el1(PGHEADER(KSTACK(core_id)));
 
     if(core_id == 0){
-        muart_init();
-        init_printf(0, unsafe_putc); 
+        
+
         uint64_t num_of_init_pages = init_pa_alloc();
         int8_t init_res = kpgtbl_init();
-        kpgtbl_debug_print((pagetable_t) &kpgtbl);
+  
        __atomic_store(&global_initialization_is_completed_el3, &completed, __ATOMIC_RELEASE);
     }else{
         while(!__atomic_load_n(&global_initialization_is_completed_el3, __ATOMIC_ACQUIRE)){
@@ -95,8 +95,7 @@ void configure_el3(uint64_t core_id){
 
     enable_mmu();
 
-    bool wait = true;
-    while(wait);
+
     asm volatile("isb");
     asm volatile("eret");// Jump to configure_el1, el1h 
     while(1);

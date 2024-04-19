@@ -5,7 +5,7 @@
 #include "base.h"
 #include "memlayout.h"
 
-__attribute__((section(".data.thread_shared")))
+__attribute__((section(".thread_shared")))
 static struct speenlock pa_alloc_lock = {
     .cpu_num = -1,
     .locked = 0,

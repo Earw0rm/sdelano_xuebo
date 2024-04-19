@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "printf.h"
 #include "speenlock.h"
 
-__attribute__((section(".data.thread_shared")))
+__attribute__((section(".thread_shared")))
 static struct speenlock printflock = {
     .cpu_num = -1,
     .locked = 0,
@@ -226,10 +226,10 @@ void utfp_printf(char *fmt, ...){
 void tfp_printf(char *fmt, ...)
     {
     acquire(&printflock);
-    va_list va;
-    va_start(va,fmt);
-    tfp_format(stdout_putp,stdout_putf,fmt,va);
-    va_end(va);
+        va_list va;
+        va_start(va,fmt);
+        tfp_format(stdout_putp,stdout_putf,fmt,va);
+        va_end(va);
     release(&printflock);
     }
 
