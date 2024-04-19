@@ -105,7 +105,7 @@ struct task user_task_create(uint8_t (*main)(void)){
             
 
             for(char * pointer = (char *) MEM_USER_TRAMPOLINE_START; pointer < ((char *) MEM_USER_TRAMPOLINE_END); pointer += 0x1000){
-                mapva_res = mapva(pointer, pointer, pgtbl,
+                mapva_res = mapva((uint64_t)pointer,(uint64_t)pointer, pgtbl,
                                                     NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
                                                     NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, false);
                 if(mapva_res < 0) return task;        

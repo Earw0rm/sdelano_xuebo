@@ -7,7 +7,7 @@ ENTRY(_start)
 MEMORY
 {
   BOOT     (rwx)  : ORIGIN = 0x0,               LENGTH = 4096*10B,
-  RAM      (rwx) : ORIGIN = 0x80000000,         LENGTH = 2048M
+  RAM      (rwx) : ORIGIN = 0x0,                LENGTH = 2048M
 }
 
 SECTIONS
@@ -25,6 +25,9 @@ SECTIONS
     . = ALIGN(4096);
     
     _boot_end_addr = .;
+
+    . += 0x5000;
+    . = ALIGN(4096);
 
     _kernel_text_start_addr = .;
     .text :  { 

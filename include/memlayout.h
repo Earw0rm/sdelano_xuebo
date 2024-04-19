@@ -15,6 +15,7 @@ extern volatile const char _kernel_shared_data_end;
 extern volatile const char _el1vec_start;
 extern volatile const char _el1vec_end;
 
+extern volatile const char _boot_start_addr;
 #endif
 
 
@@ -26,7 +27,7 @@ extern volatile const char _el1vec_end;
 #define LAYOUT_MY_CPU(cpu_id) (LAYOUT_MY_CPU_BASE + 0x1000*cpu_id) 
 #define MY_CPU_GUARD           0x0000ffffffffa000ull
 
-#define KSTACK(cpu_id) (0x0000ffffffff9000ull - 0x2000*cpu_id)
+#define KSTACK(cpu_id) (0x0000ffffffff1000ull + 0x2000*cpu_id)
 
 // legacy master view of physical memory
 #define MEM_PASTOP        (0x1f9990000) // 8gb rpi 
@@ -34,18 +35,25 @@ extern volatile const char _el1vec_end;
 #define MEM_SDRAM_TOP     (0xFC000000)
 
 // kernel must start in 0x80000000
-#define MEM_KERN_END                 ((uint64_t)&_kernel_text_end_addr)
+
+#define MEM_KERN_END                 ((uint64_t)&_end_of_kernel_addr)
+
 #define MEM_EL1VEC_END               ((uint64_t)&_el1vec_end)
 #define MEM_EL1VEC_START             ((uint64_t)&_el1vec_start)
-#define MEM_KERNEL_SHARED_DATA_END   ((uint64_t)&_kernel_shared_data_begin)
+#define MEM_KERNEL_SHARED_DATA_END   ((uint64_t)&_kernel_shared_data_end)
 #define MEM_KERNEL_SHARED_DATA_BEGIN ((uint64_t)&_kernel_shared_data_begin)
+#define MEM_KERN_TEXT_END            ((uint64_t)&_kernel_text_end_addr)
 #define MEM_KERN_TEXT_START          ((uint64_t)&_kernel_text_start_addr)
+
+#define MEM_KERN_START               (0x0)
 
 #define MEM_VC_BASE_TOP   (0x40000000)
 #define MEM_VC_BASE_BOT   (MEM_VC_BASE_TOP - 0x10000000) // 256 mb vc sdram
 #define MEM_START         (&_boot_end_addr)
 
 
+#define MEM_TMP_END   (MEM_VC_BASE_BOT)
+#define MEM_TMP_START (MEM_KERN_END)
 //###################user###########################
 
 

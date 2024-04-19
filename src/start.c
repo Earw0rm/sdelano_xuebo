@@ -31,7 +31,7 @@ void configure_el1(void){
     if(core_id == 0){
 
         muart_init();
-        init_printf(0, putc); // temp unsafe
+        init_printf(0, putc); 
         
         gic400_global_init();
 
@@ -45,6 +45,7 @@ void configure_el1(void){
             asm volatile("nop");
         }
     }
+
     gic400_local_init();
     gic400_turn_oni();
     __atomic_thread_fence(__ATOMIC_ACQ_REL);
@@ -68,18 +69,20 @@ void configure_el3(uint64_t core_id){
     
 
     w_elr_el3(((uint64_t) &configure_el1)); //  
-    w_vbar_el1(&vectors); 
+    w_vbar_el1((uint64_t) &vectors); 
     w_hcr_el2(HCR_VALUE);
     w_scr_el3(SCR_VALUE);
 
     //stuff before interrupt
     w_spsr_el3(SPSR_VALUE);
-    w_sp_el1(KSTACK(core_id));
+    w_sp_el1(PGHEADER(KSTACK(core_id)));
 
     if(core_id == 0){
-
+        muart_init();
+        init_printf(0, unsafe_putc); 
         uint64_t num_of_init_pages = init_pa_alloc();
-        uint8_t init_res = kpgtbl_init();
+        int8_t init_res = kpgtbl_init();
+        kpgtbl_debug_print((pagetable_t) &kpgtbl);
        __atomic_store(&global_initialization_is_completed_el3, &completed, __ATOMIC_RELEASE);
     }else{
         while(!__atomic_load_n(&global_initialization_is_completed_el3, __ATOMIC_ACQUIRE)){
@@ -89,10 +92,11 @@ void configure_el3(uint64_t core_id){
 
     w_ttbr0_el1((uint64_t)&kpgtbl);
     w_ttbr1_el1((uint64_t)&kpgtbl);
-    
+
     enable_mmu();
 
-
+    bool wait = true;
+    while(wait);
     asm volatile("isb");
     asm volatile("eret");// Jump to configure_el1, el1h 
     while(1);

@@ -98,9 +98,9 @@ int8_t mapva(uint64_t va, uint64_t pa, pagetable_t pgtbl,
 
 int8_t kpgtbl_init(void){
     //1st memory range
-    for(char * pointer = (char *) MEM_START; pointer < ((char *) MEM_VC_BASE_BOT); pointer += 0x1000){
+    for(char * pointer = (char *) MEM_TMP_START; pointer < ((char *) MEM_TMP_END); pointer += 0x1000){
         int8_t res = mapva((uint64_t) pointer, (uint64_t) pointer,
-                                            kpgtbl,
+                                            (pagetable_t)&kpgtbl,
                                             NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT, 
                                             NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
         if(res < 0) return -1;
@@ -124,10 +124,21 @@ int8_t kpgtbl_init(void){
     //     if(res < 0) return -3;
     // }
 
+
+    // kernel
+    for(char * pointer = ((char *) MEM_KERN_START); pointer < ((char *) MEM_KERN_END); pointer += 0x1000){
+        int64_t res = mapva((uint64_t) pointer, (uint64_t) pointer, 
+                                            (pagetable_t)&kpgtbl,
+                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
+                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
+        if(res < 0) return -4;
+    }
+
+
     //kernel shared data special memory type
     for(char * pointer = ((char *) MEM_KERNEL_SHARED_DATA_BEGIN); pointer < ((char *) MEM_KERNEL_SHARED_DATA_END); pointer += 0x1000){
         int64_t res = mapva((uint64_t) pointer, (uint64_t) pointer, 
-                                            kpgtbl,
+                                            (pagetable_t)&kpgtbl,
                                             NORMAL_IO_WRITE_BACK_RW_ALLOCATION_NON_TRAINSIENT,
                                             INNER_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
         if(res < 0) return -4;
@@ -136,7 +147,7 @@ int8_t kpgtbl_init(void){
     //devices
     for(char * pointer = ((char *) MAIN_PERIPHERAL_BOT); pointer < ((char *) ARM_LOCAL_PERIPHERAL_TOP); pointer += 0x1000){
         int64_t res = mapva((uint64_t) pointer, (uint64_t) pointer, 
-                                            kpgtbl,
+                                            (pagetable_t)&kpgtbl,
                                             DEVICE,
                                             NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
         if(res < 0) return -5;
@@ -144,7 +155,7 @@ int8_t kpgtbl_init(void){
 
     //kstack1
     for(uint8_t i = 0; i <= 3; ++i){
-        int64_t res = mapva(KSTACK(i), (uint64_t) &kstack1[(i + 1) << 12], kpgtbl,
+        int64_t res = mapva(KSTACK(i), (uint64_t) &kstack1[i << 12], (pagetable_t)&kpgtbl,
                                                 NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
                                                 NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
         if(res < 0) return -6;        
@@ -163,21 +174,21 @@ inline static void kpgtbl_debug_print_l(pagetable_t pgtbl, uint8_t level){
     
 
     for(uint8_t i = 0; (i < level && level < 3); ++i){
-        printf("\t");
+        uprintf("\t");
     }
 
     for(pagetable_t pgtbl_p = pgtbl; pgtbl_p < (pgtbl + 512); ++pgtbl_p){
 
         if(level != 3 && (((*pgtbl_p) & VALID_DESCRIPTOR) == 1)){
             uint64_t addr = DAADDR(*pgtbl_p);
-            printf("addr:%x \r\n", addr);
+            uprintf("addr:%x \r\n", addr);
 
             pagetable_t next_pgtbl = (pagetable_t)addr;
             kpgtbl_debug_print_l(next_pgtbl, ++level);
         }else if(level == 3 && ((*pgtbl_p) & VALID_DESCRIPTOR) == 1){
-            printf("\t\t\t");
+            uprintf("\t\t\t");
             uint64_t pa = DAADDR(*pgtbl_p);
-            printf("pa:%x \t full_pte:%x \r\n", pa, (*pgtbl_p));
+            uprintf("pa:%x \t full_pte:%x \r\n", pa, (*pgtbl_p));
         }
 
     }
@@ -186,8 +197,8 @@ inline static void kpgtbl_debug_print_l(pagetable_t pgtbl, uint8_t level){
 
 //call only from el3
 void kpgtbl_debug_print(pagetable_t pgtbl){
-    printf("################################\r\n");
+    uprintf("################################\r\n");
     kpgtbl_debug_print_l(pgtbl, 0);
-    printf("################################\r\n");
+    uprintf("################################\r\n");
 }
 

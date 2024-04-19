@@ -56,7 +56,8 @@ uint64_t init_pa_alloc(void){
 
     uint64_t alloc_pages_counter = 0;
 
-    for(char * pointer = (char *) MEM_START; pointer < ((char *) MEM_VC_BASE_BOT); pointer += 0x1000){
+
+    for(char * pointer = (char *) MEM_TMP_START; pointer < (char *) MEM_TMP_END; pointer += 0x1000){
         struct run * page = (struct run *) pointer;
         page->next = freepages;
         freepages = page;
