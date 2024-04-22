@@ -36,8 +36,8 @@ void configure_el1(void){
         gic400_global_init();
 
         // todo change to local timer 
-        // sys_timer_init();
-        // gic400_enable_sys_timer(3); 
+        sys_timer_init();
+        gic400_enable_sys_timer(3); 
 
        __atomic_store(&global_initialization_is_completed_el1, &completed, __ATOMIC_RELEASE);
     }else{
@@ -48,6 +48,9 @@ void configure_el1(void){
 
     gic400_local_init();
     gic400_turn_oni();
+
+    //todo tmp
+    disable_irq();
     __atomic_thread_fence(__ATOMIC_ACQ_REL);
 
     if(core_id == 0){
@@ -79,6 +82,8 @@ void configure_el3(uint64_t core_id){
 
     if(core_id == 0){
         
+        bool wait = true;
+        while(wait);
 
         uint64_t num_of_init_pages = init_pa_alloc();
         int8_t init_res = kpgtbl_init();

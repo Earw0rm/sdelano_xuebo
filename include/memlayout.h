@@ -21,7 +21,9 @@ extern volatile const char _thread_shared_end;
 #endif
 
 
-//###################kernel###########################
+////////////////////////////////////////////////////
+//###################kernel########################
+////////////////////////////////////////////////////
 #define MAXVA                 0x0000FFFFFFFFFFFF
 #define LAYOUT_TOP_GUARD      0x0000fffffffff000ull
 
@@ -29,7 +31,7 @@ extern volatile const char _thread_shared_end;
 #define LAYOUT_MY_CPU(cpu_id) (LAYOUT_MY_CPU_BASE + 0x1000*cpu_id) 
 #define MY_CPU_GUARD           0x0000ffffffffa000ull
 
-#define KSTACK(cpu_id) (0x0000ffffffff1000ull + 0x2000*cpu_id)
+#define KSTACK(cpu_id) (0x0000ffffffff0000ull + 0x2000*cpu_id)
 
 // legacy master view of physical memory
 #define MEM_PASTOP        (0x1f9990000) // 8gb rpi 
@@ -56,8 +58,10 @@ extern volatile const char _thread_shared_end;
 
 #define MEM_TMP_END   (MEM_VC_BASE_BOT)
 #define MEM_TMP_START (MEM_KERN_END)
-//###################user###########################
 
+////////////////////////////////////////////////////
+//###################user###########################
+////////////////////////////////////////////////////
 
 //trampoline it is pointer to exception vectors that live in kernel
 //in user process we set vectors equals to kernel vector

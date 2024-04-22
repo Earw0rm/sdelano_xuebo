@@ -5,6 +5,7 @@
 #include "pa_alloc.h"
 #include "memlayout.h"
 #include "GIC400.h"
+#include "exception.h"
 
 __attribute__((section(".thread_shared")))
 static struct speenlock tasks_lock = {
@@ -12,7 +13,6 @@ static struct speenlock tasks_lock = {
     .locked = 0,
     .name = "clear"
 };
-
 
 
 //current task live hire 
@@ -123,3 +123,11 @@ struct task user_task_create(uint8_t (*main)(void)){
             return task;
 }
 
+
+
+void init_task(uint8_t (*main)(void)){
+    disable_irq();
+    struct task task = user_task_create(main);
+    my_cpu()->current_task = task;
+    el0_irq_ret();
+}

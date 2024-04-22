@@ -41,6 +41,7 @@
 
 #ifndef __ASSEMBLER__
 #include "common.h"
+
 void show_invalid_entry_message(uint32_t, uint32_t, uint32_t);
 void handle_irq(void);
 void handle_el0_sync(uint64_t, uint64_t,
@@ -53,6 +54,9 @@ void* call_table_and_ret(uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3, uin
                          uint64_t x5, uint64_t x6, uint64_t x7, uint64_t fn_addr);
                          
 void el3_panic_msg(uint64_t, uint64_t);
+
+extern void el0_irq_ret(void);
+
 #endif
 
 

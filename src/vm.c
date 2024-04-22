@@ -161,8 +161,13 @@ int8_t kpgtbl_init(void){
                                                 NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
         if(res < 0) return -6;        
     }
-
-
+    //my_cpus
+    for(uint8_t i = 0; i <= 3; ++i){
+        int64_t res = mapva(LAYOUT_MY_CPU(i), (uint64_t) &cpus[i], (pagetable_t)&kpgtbl,
+                                                NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
+                                                NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
+        if(res < 0) return -7;        
+    }
     return 0;
 }   
 

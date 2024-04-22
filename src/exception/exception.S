@@ -10,6 +10,9 @@
 // esr_el1 => exception syndrome register. 
 // elr_el1 => exception link register
 // ***************************************
+
+
+
 .macro ventry label
 .align 7
     b \label
@@ -23,6 +26,7 @@
 
 	// ldr x0, #MEM_USER_TRAPFRAME
 	// ldr x0, [x0]
+	//this is the trapframe of the user 
 	ldr x0, =_el1vec_end
 	add x0, x0, #0x1000
 	ldr x0, [x0]
@@ -101,7 +105,6 @@
 .endm
 
 
-// таблица векторов обязана быть выровненной по 2^11
 
 .align 11 
 .globl vectors
@@ -126,11 +129,11 @@ vectors:
 	ventry	invalid_ex  // FIQ 32-bit EL0
 	ventry	invalid_ex  // Error 32-bit EL0
 
-
 invalid_ex:
 	mrs x15, far_el1
-w:
-	b w 
+	b invalid_ex 
+
+	
 
 el0_sync:
 	save_uctx
@@ -146,9 +149,9 @@ el0_irq:
 	isb
 	//handle
 	bl	handle_irq_el0
-	//prepare to restore 
+.globl el0_irq_ret
+el0_irq_ret:
 	ldr x0, =LAYOUT_MY_CPU_BASE
-//	ldr x0, [x0]
 
 	mrs x1, mpidr_el1
 	and x1, x1, #0xff
@@ -162,6 +165,9 @@ el0_irq:
 
 	restore_uctx
 	eret
+
+
+
 
 // for sys.S
 .globl call_table_and_ret
@@ -246,11 +252,14 @@ el1_sync:
 	eret
 
 el1_irq:
-	save_uctx
+	save_handler_ctx
 	bl	handle_irq_el1
-	restore_uctx
-	eret 
+	restore_handler_ctx
+	eret
 
+
+///////////////////////////////////////////////////////////////////////
+//#############################el3vec##################################
 ///////////////////////////////////////////////////////////////////////
 .section ".el3vec"
 
@@ -280,6 +289,5 @@ el3_vec:
 	ventry	el3_panic  			// IRQ 32-bit EL0
 	ventry	el3_panic  			// FIQ 32-bit EL0
 	ventry	el3_panic  			// Error 32-bit EL0
-
 
 

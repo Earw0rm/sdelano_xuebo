@@ -76,5 +76,6 @@ void switch_to(struct task * new_task);
 struct task user_task_create(uint8_t (*main)(void));
 
 uint8_t fork(uint8_t (*main)(void));
+void init_task(uint8_t (*main)(void));
 
 #endif

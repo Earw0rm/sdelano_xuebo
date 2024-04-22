@@ -4,23 +4,16 @@
 
 ENTRY(_start)
 
-MEMORY
-{
-  BOOT     (rwx)  : ORIGIN = 0x0,               LENGTH = 4096*10B,
-  RAM      (rwx) : ORIGIN = 0x0,                LENGTH = 2048M
-}
 
 SECTIONS
 {
     _boot_start_addr = .;
-    .text.boot : {
-         *(.text.boot)      
-    } > RAM
 
-    .data.boot : {
-         *(.data.boot)      
-    } > RAM
-    
+    .boot : {
+         *(.text.boot)      
+         *(.data.boot)
+    }
+
     . += 0x1000;
     . = ALIGN(4096);
     
@@ -29,13 +22,28 @@ SECTIONS
     . += 0x5000;
     . = ALIGN(4096);
 
-    _kernel_text_start_addr = .;
+
+    _kernel_text_start_addr = .;    
+
+    . += 0x1000;
+    . = ALIGN(4096);
+
     .text :  { 
         *(.text)
-    } > RAM
+        . += 0x1000;
+        . = ALIGN(4096);
+        _el1vec_start = .;
+        *(.el1vec)
+        . += 0x1000;
+        . = ALIGN(4096);
+        _el1vec_end = .;
+        . += 0x1000;
+        . = ALIGN(4096);
+    }
     
     . += 0x1000;
     . = ALIGN(4096);
+
     _kernel_text_end_addr = .;
 
     _kernel_data_start_addr = .;
@@ -43,59 +51,47 @@ SECTIONS
     _thread_shared_begin = .;
 
 
-    
+    . += 0x1000;
+    . = ALIGN(4096);
+
     .thread_shared : {
-    . += 0x1000;
-    . = ALIGN(4096);
         *(.thread_shared)
-
+    }
     . += 0x1000;
     . = ALIGN(4096);
-
-    } > RAM
 
     _thread_shared_end = .;
-
+    
+    . += 0x1000;
+    . = ALIGN(4096);
 
     .rodata : {
          *(.rodata)
-    } > RAM
+    }
 
     . += 0x1000;
     . = ALIGN(4096);
 
-
-    _el1vec_start = .;
-    
-    . += 0x1000;
-    . = ALIGN(4096);
-
-    .el1vec : {
-        *(.el1vec)
-    } > RAM
-
-    . += 0x1000;
-    . = ALIGN(4096);
-
-    _el1vec_end = .;
 
     .data : { 
         *(.data) 
-    } > RAM
+    }
     
     . += 1000;
     . = ALIGN(4096);
+
+
     _bss_begin = .;
     
-
     .bss : { 
 
         *(.bss*) 
 
-    } > RAM
+    }
 
     . += 1000;
     . = ALIGN(4096);    
+    
     _bss_end = .;
 
     . += 0x1000;
