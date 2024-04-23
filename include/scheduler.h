@@ -64,7 +64,7 @@ struct cpu{
     struct task current_task;
 };
 
-extern struct cpu cpus[];
+extern volatile char cpus[0x4000];
 
 void schedule(void);
 struct cpu * my_cpu(void);

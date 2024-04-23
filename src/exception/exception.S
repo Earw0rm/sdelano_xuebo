@@ -24,12 +24,7 @@
 	sub sp, sp, #8
 	str x0, [sp]
 
-	// ldr x0, #MEM_USER_TRAPFRAME
-	// ldr x0, [x0]
-	//this is the trapframe of the user 
-	ldr x0, =_el1vec_end
-	add x0, x0, #0x1000
-	ldr x0, [x0]
+	ldr x0, =MEM_USER_TRAPFRAME
 
 	stp	x2, x3,   [x0, #16 * 1]
 	stp	x4, x5,   [x0, #16 * 2]
@@ -66,9 +61,7 @@
 .endm
 
 .macro restore_uctx
-	ldr x0, =_el1vec_end
-	add x0, x0, #0x1000
-	ldr x0, [x0]
+	ldr x0, =MEM_USER_TRAPFRAME
 
 	ldp	x2, x3,   [x0, #16 * 1]
 	ldp	x4, x5,   [x0, #16 * 2]
@@ -161,6 +154,8 @@ el0_irq_ret:
 	// my_cpu -> task pagetable
 	ldr x0, [x0, #8]
 	msr ttbr0_el1, x0
+	tlbi vmalle1is
+	dsb ish
 	isb 
 
 	restore_uctx

@@ -172,15 +172,10 @@ typedef enum {
 // 63     48|47       39|38       30|29       21|20       12|11            0
 
 
-//                            Virtual address                                                              
-// +-----------------------------------------------------------------------+                                
-// |         | PGD Index | PUD Index | PMD Index | PTE Index | Page offset |                              
-// +-----------------------------------------------------------------------+ 
-// 63     48|-> 47       39|38       30|29       21|20       12|11            0
 
 
 
-#define VA_PTBL_IND(va, level) (((va) & ((0x1ffull) << (39 - level*9))) >> (39 - level*9))
+#define VA_PTBL_IND(va, level) (va&((0x1ffull) << (39 - level*9))) >> (39 - level*9)
 #define VA_PTBL_OFFSET(va) (va & 0xfff)
 
 
@@ -268,7 +263,7 @@ int8_t kpgtbl_init(void);
 
 
 void kpgtbl_debug_print(pagetable_t pgtbl);
-
+void print_pgtbl(pagetable_t pgtbl);
 
 #endif
 #endif  

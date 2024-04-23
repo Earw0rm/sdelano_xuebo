@@ -32,8 +32,8 @@
 __attribute__((aligned(0x1000))) //start from hire
 volatile char kpgtbl[0x1000] = {0};
 
-//why its here?
-__attribute__((aligned(16)))
+ // page aligned cause we use mapva on this
+__attribute__((aligned(0x1000)))
 volatile char kstack1[0x4000] = {0};
 
 pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc, bool unsafe){
@@ -66,8 +66,8 @@ pte_t * walk(pagetable_t pagetable, uint64_t va, bool alloc, bool unsafe){
 
     }
 
-
-    return &pagetable[VA_PTBL_IND(va, 3)]; // last 3nd level without offset
+    uint64_t pagetable_index = VA_PTBL_IND(va, 3);
+    return &pagetable[pagetable_index]; // last 3nd level without offset
 }
 
 
@@ -163,7 +163,7 @@ int8_t kpgtbl_init(void){
     }
     //my_cpus
     for(uint8_t i = 0; i <= 3; ++i){
-        int64_t res = mapva(LAYOUT_MY_CPU(i), (uint64_t) &cpus[i], (pagetable_t)&kpgtbl,
+        int64_t res = mapva(LAYOUT_MY_CPU(i), (uint64_t) &cpus[i << 12], (pagetable_t)&kpgtbl,
                                                 NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
                                                 NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
         if(res < 0) return -7;        
@@ -182,6 +182,7 @@ inline static void kpgtbl_debug_print_l(pagetable_t pgtbl, uint8_t level){
     for(uint8_t i = 0; (i < level && level < 3); ++i){
         uprintf("\t");
     }
+
 
     for(pagetable_t pgtbl_p = pgtbl; pgtbl_p < (pgtbl + 512); ++pgtbl_p){
 
@@ -208,3 +209,36 @@ void kpgtbl_debug_print(pagetable_t pgtbl){
     uprintf("################################\r\n");
 }
 
+
+
+inline static void print_l_pgtbl(pagetable_t pgtbl, uint8_t level){
+    
+
+
+    for(uint16_t i = 0; i < 512; ++ i){
+        uint64_t val = pgtbl[i];
+        if(level != 3 && ((val & VALID_DESCRIPTOR) == 1)){
+            uint64_t addr = DAADDR(val);
+            
+            for(uint8_t ii = 0; ii < level; ++ii){
+                printf("\t");
+            }
+            printf("level: %x, ind: %x, addr:%x \r\n", level, i, addr);
+
+            pagetable_t next_pgtbl = (pagetable_t)addr;
+            print_l_pgtbl(next_pgtbl, ++level);
+        }else if(level == 3 && (val & VALID_DESCRIPTOR) == 1){
+            printf("\t\t\t\t");
+            uint64_t pa = DAADDR(val);
+            printf("level:%x, ind: %x, pa:%x, full_pte:%x \r\n", level, i, pa, val);
+        }
+    }
+
+
+} 
+
+void print_pgtbl(pagetable_t pgtbl){
+    printf("################################\r\n");
+    print_l_pgtbl(pgtbl, 0);
+    printf("################################\r\n");
+}

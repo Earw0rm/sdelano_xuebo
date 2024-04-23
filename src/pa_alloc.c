@@ -121,6 +121,7 @@ uint64_t get_page(void){
             release(&pa_alloc_lock);
             return 0;
         }
+
         freepages = page->next;
     release(&pa_alloc_lock);
 
@@ -136,9 +137,9 @@ bool free_page(uint64_t paddr){
     }        
 
     release(&pa_alloc_lock);
-    struct run * page = ((struct run *) paddr);
-    page->next = freepages;
-    freepages = page;
+        struct run * page = ((struct run *) paddr);
+        page->next = freepages;
+        freepages = page;
     release(&pa_alloc_lock);
 
     return true;

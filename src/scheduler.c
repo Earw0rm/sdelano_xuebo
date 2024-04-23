@@ -6,6 +6,8 @@
 #include "memlayout.h"
 #include "GIC400.h"
 #include "exception.h"
+#include "printf.h"
+
 
 __attribute__((section(".thread_shared")))
 static struct speenlock tasks_lock = {
@@ -16,7 +18,8 @@ static struct speenlock tasks_lock = {
 
 
 //current task live hire 
-struct cpu cpus[4]           = {0};
+__attribute__((aligned(0x1000)))
+volatile char cpus[0x4000]   = {0};
 //acquire lock for changes this 
 static int64_t tasks_count   = -1 ;
 static struct task tasks[64] = {0};
@@ -43,7 +46,9 @@ struct task get_last(void){
 
 // this can be called only when pagetable is exists and they are ready
 struct cpu * my_cpu(void){
-    return (struct cpu *) LAYOUT_MY_CPU(get_processor_id());
+    uint64_t addr = LAYOUT_MY_CPU(get_processor_id());
+
+    return (struct cpu *) addr;
 }
 
 void schedule(void){
@@ -90,14 +95,15 @@ struct task user_task_create(uint8_t (*main)(void)){
             uint64_t tf_page = get_page();
             zero_range((char *)tf_page, 0x1000);
 
+            uint64_t stack_page = get_page();
+            zero_range((char *)stack_page, 0x1000);
+
+
             int64_t mapva_res;
 
             mapva_res = mapva(MEM_USER_TRAPFRAME, tf_page, pgtbl,
                                                 NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
                                                 NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, false);
-            
-            uint64_t stack_page = get_page();
-            zero_range((char *)stack_page, 0x1000);
 
             mapva_res = mapva(MEM_USER_STACK, stack_page, pgtbl,
                                                 NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
@@ -111,13 +117,25 @@ struct task user_task_create(uint8_t (*main)(void)){
                 if(mapva_res < 0) return task;        
             }
 
-            //выдели кернел стэк
+            //map for user code 
+            for(char * pointer = (char *) MEM_USER_START;
+                       pointer < ((char *) (MEM_USER_START + 0x5000)); 
+                       pointer += 0x1000, 
+                       main    += 0x1000){
+                mapva_res = mapva((uint64_t)pointer,(uint64_t)main, pgtbl,
+                                                    NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
+                                                    NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, false);
+                if(mapva_res < 0) return task;        
+            }
+
 
             task.trapframe = (struct trapframe *) tf_page;
             task.trapframe->sp_el0 = PGHEADER(MEM_USER_STACK);
-            task.trapframe->elr_el1 = (uint64_t) main;
             task.trapframe->spsr_el1 = EL0t_INTR_ON;
             task.ttbr0_el1 = (uint64_t) pgtbl;
+
+
+            task.trapframe->elr_el1 = MEM_USER_START;
             task.pure = true;
 
             return task;
@@ -128,6 +146,9 @@ struct task user_task_create(uint8_t (*main)(void)){
 void init_task(uint8_t (*main)(void)){
     disable_irq();
     struct task task = user_task_create(main);
+
     my_cpu()->current_task = task;
+
+    print_pgtbl((pagetable_t) task.ttbr0_el1);
     el0_irq_ret();
 }

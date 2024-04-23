@@ -81,11 +81,10 @@ void configure_el3(uint64_t core_id){
     w_sp_el1(PGHEADER(KSTACK(core_id)));
 
     if(core_id == 0){
-        
-        bool wait = true;
-        while(wait);
 
         uint64_t num_of_init_pages = init_pa_alloc();
+
+
         int8_t init_res = kpgtbl_init();
   
        __atomic_store(&global_initialization_is_completed_el3, &completed, __ATOMIC_RELEASE);

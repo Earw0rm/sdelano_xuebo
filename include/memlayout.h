@@ -71,12 +71,10 @@ extern volatile const char _thread_shared_end;
 #define MEM_USER_TRAMPOLINE_END   (MEM_EL1VEC_END)
 #define MEM_USER_TRAMPOLINE_START (MEM_EL1VEC_START)
 
-#define MEM_USER_TRAPFRAME  (MEM_USER_TRAMPOLINE_END + 0x1000)
-
-
-#define MEM_USER_MAXVA      (0x80000000ull)
-#define MEM_USER_STACK      (0x79999000ull)
-#define MEM_USER_START      (0x0)
+#define MEM_USER_TRAPFRAME  (0x79999000ull)
+#define MEM_USER_STACK      (0x79995000ull)
+#define MEM_USER_MAXVA      (0x79990000ull)
+#define MEM_USER_START      (MEM_USER_TRAMPOLINE_END)
 
 
 #endif 
