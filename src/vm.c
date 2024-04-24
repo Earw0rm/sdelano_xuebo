@@ -32,6 +32,9 @@
 __attribute__((aligned(0x1000))) //start from hire
 volatile char kpgtbl[0x1000] = {0};
 
+
+
+
  // page aligned cause we use mapva on this
 __attribute__((aligned(0x1000)))
 volatile char kstack1[0x4000] = {0};
@@ -134,6 +137,16 @@ int8_t kpgtbl_init(void){
         if(res < 0) return -4;
     }
 
+    // top kernel
+    for(char * pointer = ((char *) (VAKERNBASE | MEM_KERN_START)); pointer < ((char *) MEM_KERN_END); pointer += 0x1000){
+        int64_t res = mapva((uint64_t) pointer, (uint64_t) pointer, 
+                                            (pagetable_t)&kpgtbl,
+                                            NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
+                                            NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, true);
+        if(res < 0) return -4;
+    }
+
+
     char * ps = ((char *) MEM_KERNEL_SHARED_DATA_BEGIN);
     char * pe = ((char *) MEM_KERNEL_SHARED_DATA_END);
     //kernel shared data special memory type
@@ -211,34 +224,53 @@ void kpgtbl_debug_print(pagetable_t pgtbl){
 
 
 
-inline static void print_l_pgtbl(pagetable_t pgtbl, uint8_t level){
+
+
+static void ppgtbl(pagetable_t pgtbl){
     
-
-
     for(uint16_t i = 0; i < 512; ++ i){
         uint64_t val = pgtbl[i];
-        if(level != 3 && ((val & VALID_DESCRIPTOR) == 1)){
+        if((val & VALID_DESCRIPTOR) == 1){
             uint64_t addr = DAADDR(val);
-            
-            for(uint8_t ii = 0; ii < level; ++ii){
-                printf("\t");
-            }
-            printf("level: %x, ind: %x, addr:%x \r\n", level, i, addr);
+            printf("level: 0, ind: %x, addr:%x \r\n", i, addr);
 
-            pagetable_t next_pgtbl = (pagetable_t)addr;
-            print_l_pgtbl(next_pgtbl, ++level);
-        }else if(level == 3 && (val & VALID_DESCRIPTOR) == 1){
-            printf("\t\t\t\t");
-            uint64_t pa = DAADDR(val);
-            printf("level:%x, ind: %x, pa:%x, full_pte:%x \r\n", level, i, pa, val);
+
+            pagetable_t lv1pgtbl = (pagetable_t)addr;
+            for(uint16_t j = 0; j < 512; ++ j){
+                uint64_t vallv1 = lv1pgtbl[j];
+                if((vallv1 & VALID_DESCRIPTOR) == 1){
+                    uint64_t addrlv1 = DAADDR(vallv1);
+                    printf("\tlevel: 1 ind: %x, addr:%x \r\n", j, addrlv1);
+
+
+                    pagetable_t lv2pgtbl = (pagetable_t)addrlv1;
+                    for(uint16_t k = 0; k < 512; ++k){
+                        uint64_t vallv2 = lv2pgtbl[k];
+                        if((vallv2 & VALID_DESCRIPTOR) == 1){
+                            uint64_t addrlv2 = DAADDR(vallv2);
+                            printf("\t\tlevel: 2 ind: %x, addr:%x \r\n", k, addrlv2);
+
+                            pagetable_t lv3pgtbl = (pagetable_t)addrlv2;
+                            for(uint16_t l = 0; l < 512; ++l){
+                                uint64_t vallv3 = lv3pgtbl[l];
+                                if((vallv3 & VALID_DESCRIPTOR) == 1){
+                                    uint64_t addrlv3 = DAADDR(vallv3);
+                                    printf("\t\t\tlevel: 3 ind: %x, addr:%x, fpte: %x \r\n", l, addrlv3, vallv3);
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+
         }
     }
-
-
-} 
+}
 
 void print_pgtbl(pagetable_t pgtbl){
     printf("################################\r\n");
-    print_l_pgtbl(pgtbl, 0);
+    printf("pagetable %x print: \r\n", pgtbl);
+    ppgtbl(pgtbl);
     printf("################################\r\n");
 }

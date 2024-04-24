@@ -51,6 +51,8 @@ extern volatile const char _thread_shared_end;
 
 #define MEM_KERN_START               (0x0)
 
+#define VAKERNBASE                   (0xffff000000000000ull)
+
 #define MEM_VC_BASE_TOP   (0x40000000)
 #define MEM_VC_BASE_BOT   (MEM_VC_BASE_TOP - 0x10000000) // 256 mb vc sdram
 #define MEM_START         (&_boot_end_addr)

@@ -152,8 +152,10 @@ el0_irq_ret:
 	add x0, x0, x1 
 
 	// my_cpu -> task pagetable
+
 	ldr x0, [x0, #8]
 	msr ttbr0_el1, x0
+	
 	tlbi vmalle1is
 	dsb ish
 	isb 

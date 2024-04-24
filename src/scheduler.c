@@ -108,23 +108,90 @@ struct task user_task_create(uint8_t (*main)(void)){
             mapva_res = mapva(MEM_USER_STACK, stack_page, pgtbl,
                                                 NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
                                                 NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, false);                                                             
-            
 
             for(char * pointer = (char *) MEM_USER_TRAMPOLINE_START; pointer < ((char *) MEM_USER_TRAMPOLINE_END); pointer += 0x1000){
-                mapva_res = mapva((uint64_t)pointer,(uint64_t)pointer, pgtbl,
+                
+
+                mapva_res = mapva((uint64_t)pointer, (uint64_t)pointer, pgtbl,
                                                     NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
                                                     NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, false);
                 if(mapva_res < 0) return task;        
             }
+
+
 
             //map for user code 
             for(char * pointer = (char *) MEM_USER_START;
                        pointer < ((char *) (MEM_USER_START + 0x5000)); 
                        pointer += 0x1000, 
                        main    += 0x1000){
+                    
                 mapva_res = mapva((uint64_t)pointer,(uint64_t)main, pgtbl,
                                                     NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
                                                     NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, false);
+           
+
+                if(mapva_res < 0) return task;        
+            }
+
+
+            task.trapframe = (struct trapframe *) tf_page;
+            task.trapframe->sp_el0 = PGHEADER(MEM_USER_STACK);
+            task.trapframe->spsr_el1 = EL0t_INTR_ON;
+            task.ttbr0_el1 = (uint64_t) pgtbl;
+
+
+            task.trapframe->elr_el1 = MEM_USER_START;
+            task.pure = true;
+
+            return task;
+}
+
+struct task user_task_create2(uint8_t (*main)(void), pagetable_t pgtbl){
+            struct task task = {0};
+
+            // pagetable_t pgtbl = (pagetable_t) get_page();
+            // zero_range((char *)pgtbl, 0x1000);
+
+            uint64_t tf_page = get_page();
+            zero_range((char *)tf_page, 0x1000);
+
+            uint64_t stack_page = get_page();
+            zero_range((char *)stack_page, 0x1000);
+
+
+            int64_t mapva_res;
+
+            mapva_res = mapva(MEM_USER_TRAPFRAME, tf_page, pgtbl,
+                                                NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
+                                                NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, false);
+
+            mapva_res = mapva(MEM_USER_STACK, stack_page, pgtbl,
+                                                NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
+                                                NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, false);                                                             
+
+            for(char * pointer = (char *) MEM_USER_TRAMPOLINE_START; pointer < ((char *) MEM_USER_TRAMPOLINE_END); pointer += 0x1000){
+                
+
+                mapva_res = mapva((uint64_t)pointer, (uint64_t)pointer, pgtbl,
+                                                    NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
+                                                    NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, false);
+                if(mapva_res < 0) return task;        
+            }
+
+
+
+            //map for user code 
+            for(char * pointer = (char *) MEM_USER_START;
+                       pointer < ((char *) (MEM_USER_START + 0x5000)); 
+                       pointer += 0x1000, 
+                       main    += 0x1000){
+                    
+                mapva_res = mapva((uint64_t)pointer,(uint64_t)main, pgtbl,
+                                                    NORMAL_IO_WRITE_BACK_RW_ALLOCATION_TRAINSIENT,
+                                                    NON_SHAREABLE, VALID_DESCRIPTOR | PAGE_DESCRIPTOR, false);
+           
+
                 if(mapva_res < 0) return task;        
             }
 
@@ -145,10 +212,15 @@ struct task user_task_create(uint8_t (*main)(void)){
 
 void init_task(uint8_t (*main)(void)){
     disable_irq();
+    
+
+    bool wait = true;
+    while(wait);
     struct task task = user_task_create(main);
 
     my_cpu()->current_task = task;
-
+    
     print_pgtbl((pagetable_t) task.ttbr0_el1);
-    el0_irq_ret();
+
+    ((void (*) (void))(VAKERNBASE | (uint64_t) &el0_irq_ret))();
 }
